@@ -27,8 +27,38 @@ Node *createCircularList(int n, int passwords[])
     return head;
 }
 
-void simulate(int n,int password[],int m){
+void simulate(int n,int passwords[],int m){
+    Node *head = createCircularList(n, passwords); // 创建循环链表
+    Node *prev = nullptr;                          // 用于追踪删除节点的前一个节点                
+    cout << "Order of departure: ";
 
+    while (n > 0)
+    {
+        // 找到第 m 个节点
+        for (int i = 1; i < m; i++)
+        {
+            prev = head;
+            head = head->next;
+        }
+
+        // 输出出列编号
+        cout << head->id;
+        if (n > 1)
+            cout << " -> ";
+
+        // 更新 m 值为当前节点的密码
+        m = head->password;
+
+        // 删除当前节点
+        prev->next = head->next;
+        Node *temp = head;
+        head = head->next; // 移动到下一个节点
+        delete temp;
+
+        n--; // 剩余人数减少
+    }
+
+    cout << endl;
 }
 
 int main()
