@@ -15,31 +15,38 @@ struct Node
 // 创建单向循环链表
 Node *createCircularList(int n, int passwords[])
 {
+    //创建节点
     Node *head = new Node(1, passwords[0]); // 创建头节点
-    Node *prev = head;
+    Node *prev = head;//尾节点&中间操作节点
 
+    //循环建表
     for (int i = 2; i <= n; i++)
     {
         Node *newNode = new Node(i, passwords[i - 1]);
         prev->next = newNode;
         prev = newNode;
     }
+
     prev->next = head; // 形成循环链表
-    return head;
+    return head;//返回头
 }
 
 void simulate(int n,int passwords[],int m){
-    Node *head = createCircularList(n, passwords); // 创建循环链表
-    Node *prev = nullptr;                          // 用于追踪删除节点的前一个节点                
+
+    Node *head = createCircularList(n, passwords); // 创建循环链表，得到头节点
+
+    Node *prev = nullptr;                          // 用于追踪删除节点的前一个节点 
+
     cout << "Order of departure: ";
 
+    //循环删除
     while (n > 0)
     {
         // 找到第 m 个节点
         for (int i = 1; i < m; i++)
         {
             prev = head;
-            head = head->next;
+            head = head->next;//从头开始迭代
         }
 
         // 输出出列编号
@@ -54,7 +61,7 @@ void simulate(int n,int passwords[],int m){
         prev->next = head->next;
         Node *temp = head;
         head = head->next; // 移动到下一个节点
-        delete temp;
+        delete temp;//安全释放内存
 
         n--; // 剩余人数减少
     }
