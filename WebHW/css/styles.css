@@ -1,0 +1,120 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+nav{
+    display: flex;
+    background-color:#333;
+    justify-content: space-around;
+    padding: 10px 0;
+}
+
+nav a{
+    text-decoration: none;
+    color: white;
+    padding: 10px 20px;
+    font-size:18px;
+}
+
+nav a:hover{
+    background-color: #555;
+    border-radius: 5px;
+}
+
+.content {
+    padding: 20px;
+    margin: 10px;
+    border: 1px solid #ccc;
+    min-height: 200px;
+    border-radius: 5px;
+}
+
+/*.img1{*/
+/*    width:400px;*/
+/*    height:auto;*/
+/*}*/
+
+/*.page{*/
+/*    display: flex;*/
+/*}*/
+
+/*#home {*/
+/*    text-align: center;         !* 水平居中文本 *!*/
+/*    line-height: 100vh;         !* 垂直居中单行文本 *!*/
+/*}*/
+
+#home {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100vh;
+}
+
+.page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.img1 {
+    width: 400px;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+input[type="text"] {
+    padding: 10px;
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+select {
+    padding: 10px;
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+input[type="checkbox"] {
+    margin: 10px;
+}
+
+table {
+    width: 400px;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+#about{
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.42);
+    padding:20px;
+}
+
+.page{
+    padding:10px;
+}
+
+.img2{
+    width: 100px;
+    height: auto; /* 自动保持图片比例 */
+}
+
+.tb{
+    width: 100%;
+}

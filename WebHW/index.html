@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/styles.css">
+  <title>WebHW</title>
+</head>
+<body>
+<nav>
+  <a href='#' data-target="home">主页</a>
+  <a href='#' data-target="about">关于作者</a>
+  <a href='#' data-target="contact">联系我们</a>
+</nav>
+
+<div class="content" id="content-area">
+  <h1>期末web开发作业</h1>
+  <ul>
+    <li>开发语言：html+css+javascript</li>
+    <li>ide:WebStorm</li>
+  </ul>
+</div>
+
+<div id="templates" style="display: none;">
+  <div id="home">
+    <div class="page">
+      <h2>欢迎访问主页</h2>
+      <div> <img src="https://bu.dusays.com/2024/12/24/676a9ed7db282.png" alt="航拍高楼" class="img1"></div>
+      <div class="page-content">
+
+      </div>
+      <div class="page-footer" style="display: flex;align-items: center;">
+        <label for="username">来访者:</label>
+        <input type="text" id="username" name="username" placeholder="请输入用户名">
+      </div>
+      <div style="display: flex;align-items: center;">
+      <label for="grade">选择你的年级:</label>
+      <select id="grade" name="grade">
+        <option value="o">大一</option>
+        <option value="t">大二</option>
+        <option value="th">大三</option>
+        <option value="f">大四</option>
+      </select>
+        <hr>
+      </div>
+      <div style="display: flex;align-items: center;">
+      <label for="newsletter">接受我们的邮件回访:</label>
+      <input type="checkbox" id="newsletter" name="newsletter">
+      </div>
+      <hr>
+      <table>
+        <thead>
+        <tr>
+          <th> </th>
+          <th>github</th>
+          <th>gitee</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td>是否开源</td>
+          <td>√</td>
+          <td>×</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+  <div id="about">
+    <table class="tb">
+      <thead>
+        <tr>
+          <th>组员</th>
+          <th>名字</th>
+          <th>学号</th>
+          <th>专业班级</th>
+        </tr>
+        <tr>
+          <td><img src="https://bu.dusays.com/2024/12/30/677283532d6ae.jpg" alt="flypiggy" class="img2" width="30px" height="30px"></td>
+          <td>孙浩然</td>
+          <td>2308170215</td>
+          <td>软件23级2班</td>
+        </tr>
+        <tr>
+          <td><img src="https://bu.dusays.com/2024/12/30/6772835346a9e.jpg" alt="她还是不懂" class="img2" width="30px" height="30px"></td>
+          <td>王永伟</td>
+          <td>2308170217</td>
+          <td>软件23级2班</td>
+        </tr>
+        <tr>
+          <td><img src="https://bu.dusays.com/2024/12/30/67728353545c5.jpg" alt="长风" class="img2" width="30px" height="30px"></td>
+          <td>陈云翔</td>
+          <td>2308170201</td>
+          <td>软件23级2班</td>
+        </tr>
+      </thead>
+    </table>
+<!--    <div class="page">-->
+<!--      <img src="https://bu.dusays.com/2024/12/30/67728353545c5.jpg" alt="长风" class="img2" width="30px" height="30px">-->
+<!--    </div>-->
+<!--    <div class="page">-->
+<!--      <img src="https://bu.dusays.com/2024/12/30/6772835346a9e.jpg" alt="她还是不懂" class="img2" width="30px" height="30px">-->
+<!--    </div>-->
+<!--    <div class="page"><img src="https://bu.dusays.com/2024/12/30/677283532d6ae.jpg" alt="flypiggy" class="img2" width="30px" height="30px">-->
+<!--    </div>-->
+    <label for="sentis">鼓励一下作者吧</label>
+    <input type="text" id="sentis" name="sentis" placeholder="在这里输入哦">
+    <hr>
+    <label for="mostbtf">选择三人之中较为好看的头像:</label>
+    <select id="mostbtf" name="mostbtf">
+      <option value="o">shr</option>
+      <option value="t">wyw</option>
+      <option value="th">cyx</option>
+    </select>
+    <hr>
+    <label for="feel">是否愿意与我们一起开发</label>
+    <input type="checkbox" id="feel" name="feel">
+  </div>
+  <div id="contact">
+    <div style="text-align:center;"><img src="https://bu.dusays.com/2024/11/26/6745e38bdff89.jpg" alt="二次元图像" class="img1"></div>
+    <table class="tb">
+      <thead>
+      <tr>
+        <th>组员</th>
+        <th><div style="text-align: center;"><img src="https://bu.dusays.com/2024/12/30/6772928e7832a.png" alt="github" width="30px" height="30px"></div></th>
+        <th><div style="text-align: center;"><img src="https://bu.dusays.com/2024/12/30/6772928e78301.png" alt="email"></div></th>
+      </tr>
+      <tr>
+        <td>孙浩然</td>
+        <td><a href="https://github.com/QUSTflypiggy">QUSTflypiggy</a></td>
+        <td>2923096216@qq.com</td>
+      </tr>
+      <tr>
+        <td>王永伟</td>
+        <td><a href="https://github.com/bingdian66">bingdian66</a></td>
+        <td>3232458589@qq.com</td>
+      </tr>
+      <tr>
+        <td>陈云翔</td>
+        <td> </td>
+        <td>3168108713@qq.com</td>
+      </tr>
+      </thead>
+    </table>
+    <label for="con">请输入你的座右铭：</label>
+    <input type="text" id="con" name="con" placeholder="在这里输入哦">
+    <hr>
+    <label for="hocon">你希望怎么联系到我们:</label>
+    <select id="hocon" name="hocon">
+      <option value="o">GitHub</option>
+      <option value="t">Email</option>
+    </select>
+    <hr>
+    <label for="star">你是否愿意为<a href="https://github.com/QUSTflypiggy/QUST-lab">这个仓库</a>点点star</label>
+    <input type="checkbox" id="star" name="star">
+  </div>
+</div>
+
+<script src="js/script.js"></script>
+</body>
+</html>
+
+

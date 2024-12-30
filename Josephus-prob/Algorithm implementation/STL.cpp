@@ -5,7 +5,7 @@ using namespace std;
 
 void josephus(int n, int m, const int passwords[]) {
     // 创建链表并存储编号和密码作为键值对
-    list<pair<int, int>> circle;
+    list<pair<int,int>> circle;
     for (int i = 0; i < n; ++i) {
         circle.emplace_back(i + 1, passwords[i]); // (编号, 密码)
     }
