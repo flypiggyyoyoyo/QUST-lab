@@ -112,7 +112,7 @@ th {
 
 .img2{
     width: 100px;
-    height: auto; /* 自动保持图片比例 */
+    height: auto; 
 }
 
 .tb{
