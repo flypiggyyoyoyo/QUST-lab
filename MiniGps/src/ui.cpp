@@ -36,6 +36,8 @@ void DrawGraph(bool showDesc[]) {
     }
 
     DrawButton();
+
+    DrawReadme();
 }
 
 void DrawButton() {
@@ -61,7 +63,7 @@ bool IsButtonClicked(int mouseX, int mouseY) {
 void ShowInputDialog(int& start, int& end) {
     while (true) {
         char input[100];
-        InputBox(input, 100, "请输入起点和终点（用空格分隔）：", "最短路径查询", NULL, 0, false);
+        InputBox(input, 100, "请输入起点和终点的代号以快速查询（用空格分隔）：", "最短路径查询", NULL, 0, false);
         if (sscanf(input, "%d %d", &start, &end) != 2 || start < 1 || start > n || end < 1 || end > n) {
             MessageBox(NULL, "不合法输入，请重输！", "错误", MB_OK | MB_ICONERROR);
         } else {
@@ -70,3 +72,10 @@ void ShowInputDialog(int& start, int& end) {
     }
 }
 
+void DrawReadme() {
+    settextcolor(RED);
+    settextstyle(30, 0, "黑体"); // 设置字体样式
+    outtextxy(400, 100, "欢迎来到极简科大导游图");
+    settextstyle(20, 0, "黑体");
+    outtextxy(400, 150, "左键单击景点：展示、隐藏描述");
+}

@@ -10,7 +10,7 @@
 // 常量定义
 const int BUTTON_X1 = 500;
 const int BUTTON_Y1 = 400;
-const int BUTTON_X2 = 600;
+const int BUTTON_X2 = 630;
 const int BUTTON_Y2 = 430;
 
 // UI 相关函数声明
@@ -20,4 +20,5 @@ int GetClickedNode(int mouseX, int mouseY);
 bool IsButtonClicked(int mouseX, int mouseY);
 void ShowInputDialog(int &start,int &end);
 int GetNode(std::string str);
+void DrawReadme();
 #endif // UI_H
