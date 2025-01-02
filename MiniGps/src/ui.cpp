@@ -58,7 +58,15 @@ bool IsButtonClicked(int mouseX, int mouseY) {
     return mouseX >= BUTTON_X1 && mouseX <= BUTTON_X2 && mouseY >= BUTTON_Y1 && mouseY <= BUTTON_Y2;
 }
 
-void ShowInputDialog() {
-    char input[100];
-    InputBox(input, 100, "请输入起点和终点（用空格分隔）：", "最短路径查询", NULL, 0, false);
+void ShowInputDialog(int& start, int& end) {
+    while (true) {
+        char input[100];
+        InputBox(input, 100, "请输入起点和终点（用空格分隔）：", "最短路径查询", NULL, 0, false);
+        if (sscanf(input, "%d %d", &start, &end) != 2 || start < 1 || start > n || end < 1 || end > n) {
+            MessageBox(NULL, "不合法输入，请重输！", "错误", MB_OK | MB_ICONERROR);
+        } else {
+            break;
+        }
+    }
 }
+

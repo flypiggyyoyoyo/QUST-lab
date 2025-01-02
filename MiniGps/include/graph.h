@@ -24,4 +24,8 @@ extern std::vector<Node> nodes;
 
 void CreateGraph();
 
+std::vector<int> Dijkstra(int start);
+
+std::vector<int> GetShortestPath(int start, int end);
+
 #endif

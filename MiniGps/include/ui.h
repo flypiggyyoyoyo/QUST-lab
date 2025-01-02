@@ -18,6 +18,6 @@ void DrawGraph(bool showDesc[]);
 void DrawButton();
 int GetClickedNode(int mouseX, int mouseY);
 bool IsButtonClicked(int mouseX, int mouseY);
-void ShowInputDialog();
-
+void ShowInputDialog(int &start,int &end);
+int GetNode(std::string str);
 #endif // UI_H
