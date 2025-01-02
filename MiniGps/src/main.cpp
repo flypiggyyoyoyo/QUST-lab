@@ -1,3 +1,5 @@
+//written by flypiggy
+
 // main.cpp
 #include "ui.h"
 #include "graph.h"
@@ -5,13 +7,13 @@
 #include <vector>
 
 int main() {
-    CreateGraph();          // 创建图
-    initgraph(800, 600);    // 初始化界面
+    CreateGraph();
+    initgraph(800, 600);
 
-    bool showDesc[n + 1] = {false}; // 控制节点描述显示
-    DrawGraph(showDesc);           // 绘制初始界面
+    bool showDesc[n + 1] = {false};
+    DrawGraph(showDesc);
 
-    int start = -1, end = -1; // 起点和终点
+    int start = -1, end = -1;
     while (true) {
         MOUSEMSG msg = GetMouseMsg();
 
