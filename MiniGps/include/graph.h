@@ -6,7 +6,6 @@
 #define GRAPH_H
 #include <vector>
 #include<string>
-
 struct Node {
     std::string name;
     std::string desc;
@@ -27,5 +26,4 @@ void CreateGraph();
 std::vector<int> Dijkstra(int start);
 
 std::vector<int> GetShortestPath(int start, int end);
-
 #endif

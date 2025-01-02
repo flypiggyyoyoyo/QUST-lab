@@ -11,3 +11,7 @@
 ## WebHW
 
 2024~2025学年第一学期web开发作业，用html+css+javascript实现动态页面
+
+## MiniGps
+
+2024~2025学年第一学期数据结构实训大作业，用cpp+easyx实现无向带全图中&最短路
