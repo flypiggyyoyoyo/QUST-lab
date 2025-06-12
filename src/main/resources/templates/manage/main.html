@@ -1,0 +1,19 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org"> <!-- 必须添加此命名空间 -->
+<head>
+  <meta charset="utf-8">
+  <title>Q_ITOffer锐聘网后台管理系统</title>
+</head>
+<frameset rows="88,*" cols="*" frameborder="no" border="0" framespacing="0">
+  <!-- 用 @{} 生成绝对路径 -->
+  <frame th:src="@{/top.html}" name="topFrame" scrolling="No" noresize="noresize" id="topFrame" title="topFrame" />
+  <frameset cols="187,*" frameborder="no" border="0" framespacing="0">
+    <frame th:src="@{/left.html}" name="leftFrame" scrolling="No" noresize="noresize" id="leftFrame" title="leftFrame" />
+    <frame th:src="@{/index.html}" name="rightFrame" id="rightFrame" title="rightFrame" />
+  </frameset>
+</frameset>
+<noframes>
+  <body>
+  </body>
+</noframes>
+</html>
