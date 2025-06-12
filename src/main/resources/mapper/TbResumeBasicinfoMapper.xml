@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.flypiggyyoyoyo.demo.mapper.TbResumeBasicinfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.flypiggyyoyoyo.demo.model.TbResumeBasicinfo">
+            <id property="basicinfoId" column="BASICINFO_ID" />
+            <result property="applicantId" column="APPLICANT_ID" />
+            <result property="realname" column="REALNAME" />
+            <result property="gender" column="GENDER" />
+            <result property="birthday" column="BIRTHDAY" />
+            <result property="currentLoc" column="CURRENT_LOC" />
+            <result property="residentLoc" column="RESIDENT_LOC" />
+            <result property="telephone" column="TELEPHONE" />
+            <result property="email" column="EMAIL" />
+            <result property="jobIntension" column="JOB_INTENSION" />
+            <result property="jobExperience" column="JOB_EXPERIENCE" />
+            <result property="headShot" column="HEAD_SHOT" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        BASICINFO_ID,APPLICANT_ID,REALNAME,GENDER,BIRTHDAY,CURRENT_LOC,
+        RESIDENT_LOC,TELEPHONE,EMAIL,JOB_INTENSION,JOB_EXPERIENCE,
+        HEAD_SHOT
+    </sql>
+</mapper>

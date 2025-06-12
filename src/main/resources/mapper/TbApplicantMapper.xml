@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.flypiggyyoyoyo.demo.mapper.TbApplicantMapper">
+
+    <resultMap id="BaseResultMap" type="com.flypiggyyoyoyo.demo.model.TbApplicant">
+            <id property="applicantId" column="APPLICANT_ID" />
+            <result property="applicantEmail" column="APPLICANT_EMAIL" />
+            <result property="applicantPwd" column="APPLICANT_PWD" />
+            <result property="applicantRegistdate" column="APPLICANT_REGISTDATE" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        APPLICANT_ID,APPLICANT_EMAIL,APPLICANT_PWD,APPLICANT_REGISTDATE
+    </sql>
+</mapper>

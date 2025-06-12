@@ -1,0 +1,49 @@
+# MyBatis-Plus 配置（注意使用 mybatis-plus 前缀）
+mybatis-plus:
+  # 指定 MyBatis-Plus 的 Mapper XML 文件路径
+  mapper-locations: classpath:mappers/*.xml      # 修正路径格式，添加斜杠
+  # 指定实体类包路径（根据实际项目结构调整）
+  type-aliases-package: com.flypiggyyoyoyo.demo.entity
+  # 配置下划线转驼峰命名规则
+  configuration:
+    map-underscore-to-camel-case: true
+  # 全局配置（可选）
+  global-config:
+    db-config:
+      # 逻辑删除字段名
+      logic-delete-field: deleted
+      # 逻辑删除值
+      logic-delete-value: 1
+      # 逻辑未删除值
+      logic-not-delete-value: 0
+
+# 数据源配置
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/webqust?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    username: root
+    password: shr040726cc
+    hikari:
+      # 连接池基本配置
+      maximum-pool-size: 10          # 最大连接数
+      minimum-idle: 5                # 最小空闲连接数
+      initialization-fail-timeout: 10000  # 初始化超时时间(ms)
+      idle-timeout: 30000             # 空闲连接超时时间(ms)
+      max-lifetime: 60000             # 连接最大生命周期(ms)
+      connection-timeout: 30000       # 连接超时时间(ms)
+      validation-timeout: 3000        # 验证超时时间(ms)
+      connection-test-query: SELECT 1 # 连接验证SQL
+      pool-name: HikariCP             # 连接池名称
+
+
+  thymeleaf:
+    cache: false  # 开发环境关闭缓存，便于修改后立即生效
+    prefix: classpath:/templates/  # 前缀是否正确
+    suffix: .html                  # 后缀是否正确
+    mode: HTML                     # 模板模式，HTML 5 场景常用
+
+
+# 应用服务配置
+server:
+  port: 8080  # 服务端口
