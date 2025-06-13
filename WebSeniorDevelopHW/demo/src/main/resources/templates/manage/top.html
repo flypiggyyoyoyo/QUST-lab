@@ -1,0 +1,42 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <title>Q_ITOffer锐聘网后台管理系统</title>
+  <link th:href="@{/css/manageadmin.css}" rel="stylesheet" type="text/css" />
+</head>
+<body th:style="|background:url('@{/images/topbg.gif}') repeat-x|">
+<div class="topleft">
+  <a th:href="@{/main.html}" target="_parent">
+    <img th:src="@{/images/main_logo.png}" title="系统首页" />
+  </a>
+</div>
+
+<div class="topright">
+  <ul>
+    <li>
+      <span><img th:src="@{/images/help.png}" title="帮助" class="helpimg"/></span>
+      <a href="#">帮助</a>
+    </li>
+    <li><a href="#">关于</a></li>
+    <li><a th:href="@{/login.html}" target="_parent">退出</a></li>
+  </ul>
+  <div class="user"><span>admin</span></div>
+</div>
+
+<ul class="nav">
+  <li>
+    <a href="http://www.itoffer.cn" target="_blank" class="selected">
+      <img th:src="@{/images/globe.png}" title="网站前台" />
+      <h2>网站前台</h2>
+    </a>
+  </li>
+  <li>
+    <a th:href="@{/index.html}" target="rightFrame">
+      <img th:src="@{/images/home.png}" title="后台首页" />
+      <h2>后台首页</h2>
+    </a>
+  </li>
+</ul>
+</body>
+</html>
