@@ -22,4 +22,11 @@ public class FrameController {
     public String indexFrame() {
         return "manage/index"; // 对应 templates/index.html
     }
+
+    // 左菜单栏/用户管理
+    @GetMapping("/userList.html")
+    public String userListFrame() {return "manage/userList";}
+
+    @GetMapping("/userAdd.html")
+    public String userAddFrame() {return "manage/userAdd";}
 }

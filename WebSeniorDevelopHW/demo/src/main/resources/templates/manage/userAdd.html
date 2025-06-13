@@ -1,60 +1,193 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="utf-8">
-<title>添加用户</title>
-<link href="../../static/css/manageadmin.css" rel="stylesheet" type="text/css" />
+  <meta charset="utf-8">
+  <title>添加用户</title>
+  <link th:href="@{/css/manageadmin.css}" rel="stylesheet" type="text/tailwindcss">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#4285f4',
+            secondary: '#f0f9fd',
+            danger: '#ea4335',
+            success: '#34a853',
+            warning: '#fbbc05',
+            dark: '#202124',
+            light: '#f8f9fa'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .form-input-focus {
+        @apply focus:ring-2 focus:ring-primary/50 focus:border-primary transition duration-200;
+      }
+      .form-label {
+        @apply block text-sm font-medium text-gray-700 mb-1;
+      }
+      .required-indicator {
+        @apply text-danger ml-1;
+      }
+    }
+  </style>
 </head>
-<body>
-<div class="place"> <span>位置：</span>
-  <ul class="placeul">
-    <li><a href="#">首页</a></li>
-    <li><a href="#">添加用户</a></li>
+<body class="bg-secondary font-sans">
+<!-- 位置导航 -->
+<div class="place bg-white shadow-sm px-4 py-2 mb-6">
+  <span class="text-gray-600">位置：</span>
+  <ul class="placeul inline-flex space-x-2 text-sm">
+    <li><a href="#" class="text-primary hover:underline">首页</a></li>
+    <li><span class="text-gray-400">/</span></li>
+    <li><a href="#" class="text-primary hover:underline">添加用户</a></li>
   </ul>
 </div>
-<div class="formbody">
-  <div class="usual">
-  <form name="frm" action="../UserAddServlet" method="post">
-    <div class="tabson">
-      <ul class="forminfo">
-      	<li>
-          <label>登录名称<b>*</b></label>
-          <input name="userLogname" type="text" class="dfinput" style="width:518px;"/>
-        </li>
-        <li>
-          <label>登录密码<b>*</b></label>
-          <input name="userPwd" type="password" class="dfinput" style="width:518px;"/>
-        </li>
-        <li>
-          <label>真实姓名<b>*</b></label>
-          <input name="userRealname" type="text" class="dfinput" style="width:518px;"/>
-        </li>
-        <li>
-          <label>邮箱<b>*</b></label>
-          <input name="userEmail" type="text" class="dfinput" style="width:518px;"/>
-        </li>
-        <li>
-          <label>用户角色<b>*</b></label>
-          <div class="vocation">
-            <select name="userRole" class="select3">
-              <option value="3">普通用户</option>
-              <option value="2">企业管理员</option>
-              <option value="1">系统管理员</option>
-            </select>
-          </div>
-        </li>
-        <li>
-          <label>用户状态<b>*</b></label>
-          <input name="userState" type="radio" value="1" checked="checked"/>启用
-          <input name="userState" type="radio" value="0"/>禁用
-        </li>
-        <li>  <label>&nbsp;</label>
-          <input name="" type="submit" class="btn" value="添加"/>
-        </li>
-      </ul>
-    </div>
-  </form>
+
+<!-- 表单主体 -->
+<div class="formbody max-w-4xl mx-auto px-4">
+  <div class="usual bg-white rounded-lg shadow-sm p-6">
+    <form name="frm" action="../UserAddServlet" method="post" class="space-y-6">
+      <div class="tabson">
+        <ul class="forminfo grid grid-cols-1 md:grid-cols-12 gap-6">
+          <!-- 登录名称 -->
+          <li class="md:col-span-12">
+            <label class="form-label">
+              登录名称
+              <span class="required-indicator">*</span>
+            </label>
+            <input name="userLogname" type="text"
+                   class="dfinput w-full px-4 py-2 border border-gray-300 rounded-md form-input-focus"
+                   placeholder="请输入登录名称" />
+          </li>
+
+          <!-- 登录密码 -->
+          <li class="md:col-span-12">
+            <label class="form-label">
+              登录密码
+              <span class="required-indicator">*</span>
+            </label>
+            <input name="userPwd" type="password"
+                   class="dfinput w-full px-4 py-2 border border-gray-300 rounded-md form-input-focus"
+                   placeholder="请输入密码" />
+          </li>
+
+          <!-- 真实姓名 -->
+          <li class="md:col-span-12">
+            <label class="form-label">
+              真实姓名
+              <span class="required-indicator">*</span>
+            </label>
+            <input name="userRealname" type="text"
+                   class="dfinput w-full px-4 py-2 border border-gray-300 rounded-md form-input-focus"
+                   placeholder="请输入真实姓名" />
+          </li>
+
+          <!-- 邮箱 -->
+          <li class="md:col-span-12">
+            <label class="form-label">
+              邮箱
+              <span class="required-indicator">*</span>
+            </label>
+            <input name="userEmail" type="email"
+                   class="dfinput w-full px-4 py-2 border border-gray-300 rounded-md form-input-focus"
+                   placeholder="请输入邮箱地址" />
+          </li>
+
+          <!-- 用户角色 -->
+          <li class="md:col-span-12">
+            <label class="form-label">
+              用户角色
+              <span class="required-indicator">*</span>
+            </label>
+            <div class="vocation">
+              <select name="userRole"
+                      class="select3 w-full px-4 py-2 border border-gray-300 rounded-md form-input-focus bg-white">
+                <option value="3">普通用户</option>
+                <option value="2">企业管理员</option>
+                <option value="1">系统管理员</option>
+              </select>
+            </div>
+          </li>
+
+          <!-- 用户状态 -->
+          <li class="md:col-span-12">
+            <label class="form-label">
+              用户状态
+              <span class="required-indicator">*</span>
+            </label>
+            <div class="flex items-center space-x-6 mt-2">
+              <label class="inline-flex items-center cursor-pointer">
+                <input name="userState" type="radio" value="1" checked="checked"
+                       class="form-radio h-4 w-4 text-primary focus:ring-primary">
+                <span class="ml-2">启用</span>
+              </label>
+              <label class="inline-flex items-center cursor-pointer">
+                <input name="userState" type="radio" value="0"
+                       class="form-radio h-4 w-4 text-primary focus:ring-primary">
+                <span class="ml-2">禁用</span>
+              </label>
+            </div>
+          </li>
+
+          <!-- 提交按钮 -->
+          <li class="md:col-span-12 pt-4">
+            <label>&nbsp;</label>
+            <input name="" type="submit"
+                   class="btn bg-primary hover:bg-primary/90 text-white font-medium px-6 py-2 rounded-md transition duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                   value="添加" />
+          </li>
+        </ul>
+      </div>
+    </form>
   </div>
 </div>
+
+<!-- 简单表单验证脚本 -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form[name="frm"]');
+    form.addEventListener('submit', function(event) {
+      let isValid = true;
+      const requiredFields = form.querySelectorAll('input[required], select[required]');
+
+      requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+          isValid = false;
+          field.classList.add('border-danger');
+
+          // 添加错误提示
+          if (!field.nextElementSibling || !field.nextElementSibling.classList.contains('error-message')) {
+            const errorMsg = document.createElement('div');
+            errorMsg.className = 'error-message text-danger text-sm mt-1';
+            errorMsg.textContent = '此字段为必填项';
+            field.parentNode.insertBefore(errorMsg, field.nextSibling);
+          }
+        } else {
+          field.classList.remove('border-danger');
+          // 移除错误提示
+          const errorMsg = field.nextElementSibling;
+          if (errorMsg && errorMsg.classList.contains('error-message')) {
+            errorMsg.remove();
+          }
+        }
+      });
+
+      if (!isValid) {
+        event.preventDefault();
+      }
+    });
+  });
+</script>
 </body>
 </html>

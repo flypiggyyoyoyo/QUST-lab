@@ -3,10 +3,12 @@ package com.flypiggyyoyoyo.demo.controller;
 import com.flypiggyyoyoyo.demo.constants.ErrorEnum;
 import com.flypiggyyoyoyo.demo.data.login.LoginRequest;
 import com.flypiggyyoyoyo.demo.data.login.LoginResponse;
+import com.flypiggyyoyoyo.demo.model.TbUsers;
 import com.flypiggyyoyoyo.demo.service.TbUsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.ui.Model;
@@ -58,5 +60,12 @@ public class UserController {
     public String mainPage() {
         // System.out.println("进入 mainPage 方法");
         return "manage/main";
+    }
+
+    // 添加用户
+    @PostMapping("/user/register")
+    public String register(@Valid @ModelAttribute("user") TbUsers user, Model model) {
+        // TODO: register-logic
+        return null;
     }
 }

@@ -1,11 +1,18 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="utf-8">
-<title>企业列表</title>
-<link href="../../static/css/manageadmin.css" rel="stylesheet" type="text/css" />
+  <meta charset="utf-8">
+  <title>企业列表</title>
+  <link th:href="@{/css/manageadmin.css}" rel="stylesheet" type="text/css" />
+  <script th:src="@{/js/jquery.js}"></script>
+  <style>
+    .search-container { display: flex; gap: 10px; align-items: center; }
+    .filter-select { padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; }
+    .search-input { padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; width: 200px; }
+    .search-btn { padding: 6px 15px; background-color: #4285f4; color: white; border: none; border-radius: 4px; cursor: pointer; }
+  </style>
 </head>
-<body>
+<body class="bg-f0f9fd font-sans">
 <div class="place"> <span>位置：</span>
   <ul class="placeul">
     <li><a href="#">首页</a></li>
@@ -15,63 +22,105 @@
 <div class="rightinfo">
   <div class="tools">
     <ul class="toolbar">
-      <li class="click"><span><img src="../../static/images/t01.png" /></span><a href="userAdd.html">添加</a></li>
-      <li class="click"><span><img src="../../static/images/t02.png" /></span><a href="userAdd.html">修改</a></li>
-      <li><span><img src="../../static/images/t03.png" /></span><a href="userDelete.html">删除</a></li>
+      <li class="click"><span><img th:src="@{/images/t01.png}" /></span><a href="userAdd.html" target="rightFrame">添加</a></li>
+      <li class="click"><span><img th:src="@{/images/t02.png}" /></span><a href="userAdd.html" target="rightFrame">修改</a></li>
+      <li><span><img th:src="@{/images/t03.png}" /></span><a href="userDelete.html" target="rightFrame">删除</a></li>
     </ul>
-    <iframe src="userSearch.html" scrolling="no" frameborder="0" width="400" height="42"></iframe>
+
+    <!-- 用户身份筛选下拉框 -->
+    <div class="search-container">
+      <select class="filter-select" id="roleFilter">
+        <option value="">所有角色</option>
+        <option value="admin">系统管理员</option>
+        <option value="hr">人力资源</option>
+        <option value="user">普通用户</option>
+      </select>
+
+      <!-- 用户查询输入框 -->
+      <input type="text" class="search-input" id="userSearch" placeholder="请输入用户名">
+      <button class="search-btn" id="searchBtn">搜索</button>
+    </div>
   </div>
+
   <table class="imgtable">
     <thead>
-      <tr>
-        <th ><input name="" type="checkbox" value="" checked="checked"/></th>
-        <th>用户登录名</th>
-        <th>用户真实姓名</th>
-        <th>用户Email</th>
-        <th>用户角色</th>
-        <th>用户状态</th>
-        <th>操作</th>
-      </tr>
+    <tr>
+      <th><input name="" type="checkbox" value="" checked="checked"/></th>
+      <th>用户登录名</th>
+      <th>用户真实姓名</th>
+      <th>用户Email</th>
+      <th>用户角色</th>
+      <th>用户状态</th>
+      <th>操作</th>
+    </tr>
     </thead>
     <tbody>
-      <tr height="50px">
-        <td ><input name="" type="checkbox" value="" /></td>
-        <td>QST</td>
-        <td>青软实训</td>
-        <td>qst@test.com</td>
-        <td>系统管理员</td>
-        <td>启用</td>
-        <td ><a href="userAdd.html" class="tablelink">修改</a> &nbsp;&nbsp;<a href="#" class="tablelink"> 删除</a></td>
-      </tr>
-      <tr height="50px">
-        <td ><input name="" type="checkbox" value="" /></td>
-        <td>QST</td>
-        <td>青软实训</td>
-        <td>qst@test.com</td>
-        <td>系统管理员</td>
-        <td>启用</td>
-        <td ><a href="userAdd.html" class="tablelink">修改</a> &nbsp;&nbsp;<a href="#" class="tablelink"> 删除</a></td>
-      </tr>
-      <tr height="50px">
-        <td ><input name="" type="checkbox" value="" /></td>
-        <td>QST</td>
-        <td>青软实训</td>
-        <td>qst@test.com</td>
-        <td>系统管理员</td>
-        <td>启用</td>
-        <td ><a href="userAdd.html" class="tablelink">修改</a> &nbsp;&nbsp;<a href="#" class="tablelink"> 删除</a></td>
-      </tr>
+    <tr height="50px">
+      <td><input name="" type="checkbox" value="" /></td>
+      <td>QST</td>
+      <td>青软实训</td>
+      <td>qst@test.com</td>
+      <td>系统管理员</td>
+      <td>启用</td>
+      <td><a href="userAdd.html" class="tablelink">修改</a> &nbsp;&nbsp;<a href="#" class="tablelink"> 删除</a></td>
+    </tr>
+    <tr height="50px">
+      <td><input name="" type="checkbox" value="" /></td>
+      <td>QST</td>
+      <td>青软实训</td>
+      <td>qst@test.com</td>
+      <td>人力资源</td>
+      <td>启用</td>
+      <td><a href="userAdd.html" class="tablelink">修改</a> &nbsp;&nbsp;<a href="#" class="tablelink"> 删除</a></td>
+    </tr>
+    <tr height="50px">
+      <td><input name="" type="checkbox" value="" /></td>
+      <td>QST</td>
+      <td>青软实训</td>
+      <td>qst@test.com</td>
+      <td>普通用户</td>
+      <td>启用</td>
+      <td><a href="userAdd.html" class="tablelink">修改</a> &nbsp;&nbsp;<a href="#" class="tablelink"> 删除</a></td>
+    </tr>
     </tbody>
   </table>
+
   <div class="pagin">
     <div class="message">共<i class="blue">1256</i>页，当前显示第&nbsp;<i class="blue">2&nbsp;</i>页</div>
     <ul class="paginList">
       <li class="paginItem"><a href="javascript:;">首页</a></li>
       <li class="paginItem"><a href="javascript:;">上一页<span class="pagepre"></span></a></li>
       <li class="paginItem"><a href="javascript:;">下一页<span class="pagenxt"></span></a></li>
-       <li class="paginItem"><a href="javascript:;">尾页</a></li>
+      <li class="paginItem"><a href="javascript:;">尾页</a></li>
     </ul>
   </div>
 </div>
+
+<script>
+  $(function() {
+    // 搜索功能
+    $("#searchBtn").click(function() {
+      const searchText = $("#userSearch").val();
+      const roleFilter = $("#roleFilter").val();
+      // 这里可以添加搜索逻辑，例如发送AJAX请求
+      console.log("搜索关键词:", searchText);
+      console.log("角色筛选:", roleFilter);
+    });
+
+    // 回车搜索
+    $("#userSearch").keypress(function(e) {
+      if (e.which === 13) {
+        $("#searchBtn").click();
+      }
+    });
+
+    // 角色筛选
+    $("#roleFilter").change(function() {
+      const role = $(this).val();
+      // 这里可以添加筛选表格的逻辑
+      console.log("筛选角色:", role);
+    });
+  });
+</script>
 </body>
 </html>
