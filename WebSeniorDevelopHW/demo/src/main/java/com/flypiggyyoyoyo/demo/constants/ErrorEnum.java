@@ -4,7 +4,6 @@ import lombok.Getter;
 
 @Getter
 public enum ErrorEnum {
-    SUCCESS(200, "登录成功"),
     USER_NOT_EXIST(401, "用户不存在"),
     PASSWORD_ERROR(402, "密码错误"),
     CAPTCHA_ERROR(403, "验证码错误"),

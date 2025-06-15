@@ -1,12 +1,15 @@
 package com.flypiggyyoyoyo.demo.controller;
 
 import com.flypiggyyoyoyo.demo.constants.ErrorEnum;
+import com.flypiggyyoyoyo.demo.constants.SuccessEnum;
 import com.flypiggyyoyoyo.demo.data.login.LoginRequest;
 import com.flypiggyyoyoyo.demo.data.login.LoginResponse;
+import com.flypiggyyoyoyo.demo.data.register.RegisterRequest;
 import com.flypiggyyoyoyo.demo.model.TbUsers;
 import com.flypiggyyoyoyo.demo.service.TbUsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,7 +45,7 @@ public class UserController {
             // 4. 如果验证通过，将用户信息存入session
 
             // 模拟验证成功
-            if (response != null && response.getCode() == ErrorEnum.SUCCESS.getCode()) {
+            if (response != null && response.getCode() == SuccessEnum.LOGIN_SUCCESS.getCode()) {
                 //session.setAttribute("user", response.getUserName());
                 return "redirect:/manage/main"; // 登录成功，重定向到主页
             } else {
@@ -64,8 +67,11 @@ public class UserController {
 
     // 添加用户
     @PostMapping("/user/register")
-    public String register(@Valid @ModelAttribute("user") TbUsers user, Model model) {
-        // TODO: register-logic
-        return null;
+    public String handleRegister(@Valid RegisterRequest request,
+                                 BindingResult bindingResult,
+                                 Model model) {
+        userService.register(request);
+        // System.out.println("注册完成");
+        return "manage/main";
     }
 }

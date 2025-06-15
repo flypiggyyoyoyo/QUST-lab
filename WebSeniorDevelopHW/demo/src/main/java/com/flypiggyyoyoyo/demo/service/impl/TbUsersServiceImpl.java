@@ -1,13 +1,21 @@
 package com.flypiggyyoyoyo.demo.service.impl;
 
+import cn.hutool.core.lang.Snowflake;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.flypiggyyoyoyo.demo.constants.ErrorEnum;
+import com.flypiggyyoyoyo.demo.constants.SuccessEnum;
 import com.flypiggyyoyoyo.demo.data.login.LoginRequest;
 import com.flypiggyyoyoyo.demo.data.login.LoginResponse;
+import com.flypiggyyoyoyo.demo.data.register.RegisterRequest;
+import com.flypiggyyoyoyo.demo.data.register.RegisterResponse;
+import com.flypiggyyoyoyo.demo.exception.DatabaseException;
+import com.flypiggyyoyoyo.demo.exception.UserException;
 import com.flypiggyyoyoyo.demo.model.TbUsers;
 import com.flypiggyyoyoyo.demo.service.TbUsersService;
 import com.flypiggyyoyoyo.demo.mapper.TbUsersMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.util.DigestUtils;
 
 /**
 * @author flypiggy
@@ -54,10 +62,56 @@ public class TbUsersServiceImpl extends ServiceImpl<TbUsersMapper, TbUsers>
         // response.setUserId(user.getId());
 
         // 模拟验证通过
-        response.setCode(ErrorEnum.SUCCESS.getCode());
+        response.setCode(SuccessEnum.LOGIN_SUCCESS.getCode());
         response.setUserName(request.getUserName());
 
         return response;
+    }
+
+    @Override
+    public RegisterResponse register(RegisterRequest request) {
+        String logName = request.getUserLogname();
+        String password = request.getUserPwd();
+        String email = request.getUserEmail();
+        String realName = request.getUserRealname();
+        int role = request.getUserRole();
+        int state = request.getUserState();
+
+        // 验证：邮箱
+        if(isRegister(email)){
+            throw new UserException(ErrorEnum.EMAIL_EXIST);
+        }
+
+        // 注册流程
+
+        Snowflake snowflake = new Snowflake(1, 1);
+        String encryptedPassword= DigestUtils.md5DigestAsHex(password.getBytes());
+
+        TbUsers tbUsers = new TbUsers()
+                .setUserLogname(logName)
+                .setUserPwd(encryptedPassword)
+                .setUserEmail(email)
+                .setUserRealname(realName)
+                .setUserRole(role)
+                .setUserState(state);
+
+        boolean isUserSave = this.save(tbUsers);
+
+        if(!isUserSave) {
+            throw new DatabaseException("数据库异常，存储信息失败");
+        }
+
+        RegisterResponse response = new RegisterResponse();
+        response.setCode(SuccessEnum.REGISTER_SUCCESS.getCode());
+
+        return response;
+    }
+
+    private boolean isRegister (String email){
+        QueryWrapper<TbUsers> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("USER_EMAIL", email);
+        long count = this.count(queryWrapper);
+        return count > 0;
     }
 }
 

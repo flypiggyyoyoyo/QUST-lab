@@ -19,17 +19,4 @@ public class LoginResponse {
 //    private String token;         // 访问令牌
 //    private Long expireTime;      // 令牌过期时间（毫秒时间戳）
 
-    // 快速构建成功响应
-    public static LoginResponse success() {
-        return new LoginResponse()
-                .setCode(ErrorEnum.SUCCESS.getCode())
-                .setMessage(ErrorEnum.SUCCESS.getMessage());
-    }
-
-    // 快速构建失败响应
-    public static LoginResponse fail(ErrorEnum status) {
-        return new LoginResponse()
-                .setCode(status.getCode())
-                .setMessage(status.getMessage());
-    }
 }

@@ -34,6 +34,13 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!-- 雪花算法 -->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.7.17</version>
+        </dependency>
+
         <!-- 开发工具 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
