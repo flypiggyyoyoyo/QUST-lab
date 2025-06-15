@@ -1,4 +1,4 @@
-package com.flypiggyyoyoyo.demo.data.login;
+package com.flypiggyyoyoyo.demo.data.user.login;
 
 import lombok.Data;
 
@@ -6,7 +6,7 @@ import javax.validation.constraints.NotEmpty;
 
 @Data
 
-public class LoginRequest {
+public class UserLoginRequest {
 
     @NotEmpty(message = "用户名不能为空")
     private String userName;

@@ -5,10 +5,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.flypiggyyoyoyo.demo.constants.ErrorEnum;
 import com.flypiggyyoyoyo.demo.constants.SuccessEnum;
-import com.flypiggyyoyoyo.demo.data.login.LoginRequest;
-import com.flypiggyyoyoyo.demo.data.login.LoginResponse;
-import com.flypiggyyoyoyo.demo.data.register.RegisterRequest;
-import com.flypiggyyoyoyo.demo.data.register.RegisterResponse;
+import com.flypiggyyoyoyo.demo.data.user.login.UserLoginRequest;
+import com.flypiggyyoyoyo.demo.data.user.login.UserLoginResponse;
+import com.flypiggyyoyoyo.demo.data.user.register.UserRegisterRequest;
+import com.flypiggyyoyoyo.demo.data.user.register.UserRegisterResponse;
 import com.flypiggyyoyoyo.demo.exception.DatabaseException;
 import com.flypiggyyoyoyo.demo.exception.UserException;
 import com.flypiggyyoyoyo.demo.model.TbUsers;
@@ -27,8 +27,8 @@ public class TbUsersServiceImpl extends ServiceImpl<TbUsersMapper, TbUsers>
     implements TbUsersService{
 
     @Override
-    public LoginResponse login(LoginRequest request) {
-        LoginResponse response = new LoginResponse();
+    public UserLoginResponse login(UserLoginRequest request) {
+        UserLoginResponse response = new UserLoginResponse();
 
         // TODO: 实现登录验证逻辑
         // 1. 根据用户名查询用户
@@ -69,7 +69,7 @@ public class TbUsersServiceImpl extends ServiceImpl<TbUsersMapper, TbUsers>
     }
 
     @Override
-    public RegisterResponse register(RegisterRequest request) {
+    public UserRegisterResponse register(UserRegisterRequest request) {
         String logName = request.getUserLogname();
         String password = request.getUserPwd();
         String email = request.getUserEmail();
@@ -101,7 +101,7 @@ public class TbUsersServiceImpl extends ServiceImpl<TbUsersMapper, TbUsers>
             throw new DatabaseException("数据库异常，存储信息失败");
         }
 
-        RegisterResponse response = new RegisterResponse();
+        UserRegisterResponse response = new UserRegisterResponse();
         response.setCode(SuccessEnum.REGISTER_SUCCESS.getCode());
 
         return response;

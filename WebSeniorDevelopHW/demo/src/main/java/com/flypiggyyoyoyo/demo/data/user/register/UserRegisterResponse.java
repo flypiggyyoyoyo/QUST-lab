@@ -1,10 +1,10 @@
-package com.flypiggyyoyoyo.demo.data.register;
+package com.flypiggyyoyoyo.demo.data.user.register;
 
 import com.flypiggyyoyoyo.demo.constants.ErrorEnum;
 import lombok.Data;
 
 @Data
-public class RegisterResponse {
+public class UserRegisterResponse {
 
     private int code;
 }

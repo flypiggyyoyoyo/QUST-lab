@@ -27,6 +27,11 @@ public class FrameController {
     @GetMapping("/userList.html")
     public String userListFrame() {return "manage/userList";}
 
+    // 用户添加
     @GetMapping("/userAdd.html")
     public String userAddFrame() {return "manage/userAdd";}
+
+    // 企业管理
+    @GetMapping("/companyList.html")
+    public String companyListFrame() {return "manage/companyList";}
 }

@@ -1,4 +1,4 @@
-package com.flypiggyyoyoyo.demo.data.login;
+package com.flypiggyyoyoyo.demo.data.user.login;
 
 import com.flypiggyyoyoyo.demo.constants.ErrorEnum;
 import lombok.Data;
@@ -6,7 +6,7 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class LoginResponse {
+public class UserLoginResponse {
     private int code;             // 状态码（使用枚举类中的 code）
     private String message;       // 状态消息（使用枚举类中的 message）
 

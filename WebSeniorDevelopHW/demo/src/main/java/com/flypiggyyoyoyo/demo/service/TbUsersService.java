@@ -1,12 +1,11 @@
 package com.flypiggyyoyoyo.demo.service;
 
-import com.flypiggyyoyoyo.demo.data.login.LoginRequest;
-import com.flypiggyyoyoyo.demo.data.login.LoginResponse;
-import com.flypiggyyoyoyo.demo.data.register.RegisterRequest;
-import com.flypiggyyoyoyo.demo.data.register.RegisterResponse;
+import com.flypiggyyoyoyo.demo.data.user.login.UserLoginRequest;
+import com.flypiggyyoyoyo.demo.data.user.login.UserLoginResponse;
+import com.flypiggyyoyoyo.demo.data.user.register.UserRegisterRequest;
+import com.flypiggyyoyoyo.demo.data.user.register.UserRegisterResponse;
 import com.flypiggyyoyoyo.demo.model.TbUsers;
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.springframework.stereotype.Service;
 
 /**
 * @author flypiggy
@@ -15,7 +14,7 @@ import org.springframework.stereotype.Service;
 */
 
 public interface TbUsersService extends IService<TbUsers> {
-    LoginResponse login(LoginRequest requset);
+    UserLoginResponse login(UserLoginRequest requset);
 
-    RegisterResponse register(RegisterRequest request);
+    UserRegisterResponse register(UserRegisterRequest request);
 }

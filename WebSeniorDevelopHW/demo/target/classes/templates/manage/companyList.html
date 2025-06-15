@@ -1,11 +1,18 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="utf-8">
-<title>企业列表</title>
-<link href="../../static/css/manageadmin.css" rel="stylesheet" type="text/css" />
+  <meta charset="utf-8">
+  <title>企业列表</title>
+  <link th:href="@{/css/manageadmin.css}" rel="stylesheet" type="text/css" />
+  <script th:src="@{/js/jquery.js}"></script>
+  <style>
+    .search-container { display: flex; gap: 10px; align-items: center; }
+    .filter-select { padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; }
+    .search-input { padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; width: 200px; }
+    .search-btn { padding: 6px 15px; background-color: #4285f4; color: white; border: none; border-radius: 4px; cursor: pointer; }
+  </style>
 </head>
-<body>
+<body class="bg-f0f9fd font-sans">
 <div class="place"> <span>位置：</span>
   <ul class="placeul">
     <li><a href="#">首页</a></li>
@@ -15,60 +22,76 @@
 <div class="rightinfo">
   <div class="tools">
     <ul class="toolbar">
-      <li class="click"><span><img src="../../static/images/t01.png" /></span><a href="companyAdd.html">添加</a></li>
-      <li><span><img src="../../static/images/t03.png" /></span><a href="#">删除</a></li>
+      <li class="click"><span><img th:src="@{/images/t01.png}" /></span><a href="companyAdd.html" target="rightFrame">添加</a></li>
+      <li><span><img th:src="@{/images/t03.png}" /></span><a href="companyDelete.html" target="rightFrame">删除</a></li>
     </ul>
+
+    <!-- 企业筛选下拉框 -->
+    <div class="search-container">
+      <select class="filter-select" id="companyFilter">
+        <option value="">所有企业</option>
+        <option value="large">大型企业(1000人以上)</option>
+        <option value="medium">中型企业(100-1000人)</option>
+        <option value="small">小型企业(100人以下)</option>
+      </select>
+
+      <!-- 企业查询输入框 -->
+      <input type="text" class="search-input" id="companySearch" placeholder="请输入企业名称">
+      <button class="search-btn" id="searchBtn">搜索</button>
+    </div>
   </div>
+
   <table class="imgtable">
     <thead>
-      <tr>
-        <th ><input name="" type="checkbox" value="" checked="checked"/></th>
-        <th>企业名称</th>
-        <th>企业所在地</th>
-        <th>企业规模</th>
-        <th>企业性质</th>
-        <th>招聘状态</th>
-        <th>显示排序</th>
-        <th>浏览数</th>
-        <th>操作</th>
-      </tr>
+    <tr>
+      <th><input name="" type="checkbox" value="" checked="checked"/></th>
+      <th>企业名称</th>
+      <th>企业所在地</th>
+      <th>企业规模</th>
+      <th>企业性质</th>
+      <th>招聘状态</th>
+      <th>显示排序</th>
+      <th>浏览数</th>
+      <th>操作</th>
+    </tr>
     </thead>
     <tbody>
-      <tr height="50px">
-        <td ><input name="" type="checkbox" value="" /></td>
-        <td>凌志软件股份有限公司</td>
-        <td>苏州市</td>
-        <td>1000人以上</td>
-        <td>股份制企业</td>
-        <td>招聘中</td>
-        <td>1</td>
-        <td>1234</td>
-        <td ><a href="companyAdd.html" class="tablelink">修改</a> &nbsp;&nbsp;<a href="#" class="tablelink"> 删除</a></td>
-      </tr>
-      <tr height="50px">
-        <td ><input name="" type="checkbox" value="" /></td>
-        <td>苏州大宇宙信息创造有限公司</td>
-        <td>苏州市</td>
-        <td>100-200人</td>
-        <td>外资企业</td>
-        <td>招聘中</td>
-        <td>1</td>
-        <td>1234</td>
-        <td ><a href="companyAdd.html" class="tablelink">修改</a> &nbsp;&nbsp;<a href="#" class="tablelink"> 删除</a></td>
-      </tr>
-      <tr height="50px">
-        <td ><input name="" type="checkbox" value="" /></td>
-        <td>北京日立华胜信息系统有限公司</td>
-        <td>东城区</td>
-        <td>200-500人</td>
-        <td>合资企业</td>
-        <td>招聘中</td>
-        <td>1</td>
-        <td>1234</td>
-        <td ><a href="companyAdd.html" class="tablelink">修改 </a> &nbsp;&nbsp;<a href="#" class="tablelink"> 删除</a></td>
-      </tr>
+    <tr height="50px">
+      <td><input name="" type="checkbox" value="" /></td>
+      <td>凌志软件股份有限公司</td>
+      <td>苏州市</td>
+      <td>1000人以上</td>
+      <td>股份制企业</td>
+      <td>招聘中</td>
+      <td>1</td>
+      <td>1234</td>
+      <td><a href="companyAdd.html" class="tablelink">修改</a> &nbsp;&nbsp;<a href="#" class="tablelink">删除</a></td>
+    </tr>
+    <tr height="50px">
+      <td><input name="" type="checkbox" value="" /></td>
+      <td>苏州大宇宙信息创造有限公司</td>
+      <td>苏州市</td>
+      <td>100-200人</td>
+      <td>外资企业</td>
+      <td>招聘中</td>
+      <td>1</td>
+      <td>1234</td>
+      <td><a href="companyAdd.html" class="tablelink">修改</a> &nbsp;&nbsp;<a href="#" class="tablelink">删除</a></td>
+    </tr>
+    <tr height="50px">
+      <td><input name="" type="checkbox" value="" /></td>
+      <td>北京日立华胜信息系统有限公司</td>
+      <td>东城区</td>
+      <td>200-500人</td>
+      <td>合资企业</td>
+      <td>招聘中</td>
+      <td>1</td>
+      <td>1234</td>
+      <td><a href="companyAdd.html" class="tablelink">修改</a> &nbsp;&nbsp;<a href="#" class="tablelink">删除</a></td>
+    </tr>
     </tbody>
   </table>
+
   <div class="pagin">
     <div class="message">共<i class="blue">1256</i>条记录，当前显示第&nbsp;<i class="blue">2&nbsp;</i>页</div>
     <ul class="paginList">
@@ -84,5 +107,32 @@
     </ul>
   </div>
 </div>
+
+<script>
+  $(function() {
+    // 搜索功能
+    $("#searchBtn").click(function() {
+      const searchText = $("#companySearch").val();
+      const companyFilter = $("#companyFilter").val();
+      // 这里可以添加搜索逻辑，例如发送AJAX请求
+      console.log("搜索关键词:", searchText);
+      console.log("企业规模筛选:", companyFilter);
+    });
+
+    // 回车搜索
+    $("#companySearch").keypress(function(e) {
+      if (e.which === 13) {
+        $("#searchBtn").click();
+      }
+    });
+
+    // 企业规模筛选
+    $("#companyFilter").change(function() {
+      const filter = $(this).val();
+      // 这里可以添加筛选表格的逻辑
+      console.log("筛选企业规模:", filter);
+    });
+  });
+</script>
 </body>
 </html>

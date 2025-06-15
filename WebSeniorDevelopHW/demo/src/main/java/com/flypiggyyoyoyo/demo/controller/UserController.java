@@ -1,17 +1,14 @@
 package com.flypiggyyoyoyo.demo.controller;
 
-import com.flypiggyyoyoyo.demo.constants.ErrorEnum;
 import com.flypiggyyoyoyo.demo.constants.SuccessEnum;
-import com.flypiggyyoyoyo.demo.data.login.LoginRequest;
-import com.flypiggyyoyoyo.demo.data.login.LoginResponse;
-import com.flypiggyyoyoyo.demo.data.register.RegisterRequest;
-import com.flypiggyyoyoyo.demo.model.TbUsers;
+import com.flypiggyyoyoyo.demo.data.user.login.UserLoginRequest;
+import com.flypiggyyoyoyo.demo.data.user.login.UserLoginResponse;
+import com.flypiggyyoyoyo.demo.data.user.register.UserRegisterRequest;
 import com.flypiggyyoyoyo.demo.service.TbUsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.ui.Model;
@@ -33,10 +30,10 @@ public class UserController {
 
     // 处理表单提交的登录请求
     @PostMapping("/login")
-    public String login(LoginRequest request, Model model, HttpSession session) {
+    public String login(UserLoginRequest request, Model model, HttpSession session) {
         try {
             // 调用服务层进行登录验证
-            LoginResponse response = userService.login(request);
+            UserLoginResponse response = userService.login(request);
 
             // TODO: 实现登录验证逻辑
             // 1. 根据用户名查询用户
@@ -67,7 +64,7 @@ public class UserController {
 
     // 添加用户
     @PostMapping("/user/register")
-    public String handleRegister(@Valid RegisterRequest request,
+    public String handleRegister(@Valid UserRegisterRequest request,
                                  BindingResult bindingResult,
                                  Model model) {
         userService.register(request);
