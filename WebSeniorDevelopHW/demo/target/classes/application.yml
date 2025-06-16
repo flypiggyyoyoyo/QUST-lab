@@ -10,6 +10,11 @@ mybatis-plus:
   # 配置下划线转驼峰命名规则
   configuration:
     map-underscore-to-camel-case: true
+
+    # 启用MyBatis日志（打印SQL）
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    mapper-locations: classpath*:/mapper/**/*.xml  # 确保Mapper路径正确
+
   # 全局配置（可选）
   global-config:
     db-config:
@@ -19,6 +24,12 @@ mybatis-plus:
       logic-delete-value: 1
       # 逻辑未删除值
       logic-not-delete-value: 0
+
+
+# 配置日志级别（打印完整SQL参数）
+logging:
+  level:
+    com.flypiggyyoyoyo.demo.mapper: debug  # 替换为你的Mapper包路径
 
 # 数据源配置
 spring:

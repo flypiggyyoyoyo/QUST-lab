@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 @Data
 public class UserRegisterRequest {
 
-    @NotEmpty(message = "登录名称不能为空")
+    @NotEmpty(message = "名称不能为空")
     private String userLogname;
 
     @NotEmpty(message = "密码不能为空")

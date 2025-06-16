@@ -1,5 +1,7 @@
 package com.flypiggyyoyoyo.demo.service;
 
+import com.flypiggyyoyoyo.demo.data.company.register.CompanyRegisterRequest;
+import com.flypiggyyoyoyo.demo.data.company.register.CompanyRegisterResponse;
 import com.flypiggyyoyoyo.demo.model.TbCompany;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -9,5 +11,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
 * @createDate 2025-06-12 17:07:38
 */
 public interface TbCompanyService extends IService<TbCompany> {
-
+    CompanyRegisterResponse register(CompanyRegisterRequest request);
 }

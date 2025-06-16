@@ -1,98 +1,307 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="utf-8">
-<title>添加企业</title>
-<link href="../../static/css/manageadmin.css" rel="stylesheet" type="text/css" />
-<script type="text/javascript" src="../../static/ckeditor/ckeditor.js"></script>
-<script type="text/javascript">
-function validate(){
-	if(document.getElementById("companyName").value == ""){
-		alert("企业名称不能为空！");
-		document.getElementById("companyName").focus();
-		return false;
-	}
-	if(document.getElementById("companyArea").value == ""){
-		alert("企业所在地不能为空！");
-		document.getElementById("companyArea").focus();
-		return false;
-	}
-	if(document.getElementById("companySize").value == ""){
-		alert("企业规模不能为空！");
-		document.getElementById("companySize").focus();
-		return false;
-	}
-	if(document.getElementById("companyType").value == ""){
-		alert("企业性质不能为空！");
-		document.getElementById("companyType").focus();
-		return false;
-	}
-	if(document.getElementById("companyPic").value == ""){
-		alert("请选择企业宣传图片！");
-		document.getElementById("companyPic").focus();
-		return false;
-	}
-	return true;
-}
-</script>
+  <meta charset="utf-8">
+  <title>添加企业</title>
+  <link th:href="@{/css/manageadmin.css}" rel="stylesheet" type="text/tailwindcss">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script th:src="@{/js/jquery.js}"></script>
+  <script th:src="@{/ckeditor/ckeditor.js}"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#4285f4',
+            secondary: '#f0f9fd',
+            danger: '#ea4335',
+            success: '#34a853',
+            warning: '#fbbc05',
+            dark: '#202124',
+            light: '#f8f9fa'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .form-input-focus {
+        @apply focus:ring-2 focus:ring-primary/50 focus:border-primary transition duration-200;
+      }
+      .form-label {
+        @apply block text-sm font-medium text-gray-700 mb-1;
+      }
+      .required-indicator {
+        @apply text-danger ml-1;
+      }
+      .error-message {
+        @apply text-danger text-sm mt-1;
+      }
+    }
+  </style>
 </head>
-<body>
-<div class="place"> <span>位置：</span>
-  <ul class="placeul">
-    <li><a href="#">首页</a></li>
-    <li><a href="#">添加企业</a></li>
+<body class="bg-secondary font-sans">
+<!-- 位置导航 -->
+<div class="place bg-white shadow-sm px-4 py-2 mb-6">
+  <span class="text-gray-600">位置：</span>
+  <ul class="placeul inline-flex space-x-2 text-sm">
+    <li><a href="#" class="text-primary hover:underline">首页</a></li>
+    <li><span class="text-gray-400">/</span></li>
+    <li><a href="#" class="text-primary hover:underline">添加企业</a></li>
   </ul>
 </div>
-<div class="formbody">
-  <div class="usual">
-  <form name="frm" action="companyList.html" method="post" enctype="multipart/form-data" onsubmit="return validate();">
-    <div class="tabson">
-      <ul class="forminfo">
-      	<li>
-          <label>企业名称<b>*</b></label>
-          <input name="companyName" type="text" id="companyName" class="dfinput" style="width:518px;"/>
-        </li>
-        <li>
-          <label>企业所在地<b>*</b></label>
-          <input name="companyArea" type="text" id="companyArea" class="dfinput" style="width:518px;"/>
-        </li>
-        <li>
-          <label>企业规模<b>*</b></label>
-          <input name="companySize" type="text" id="companySize" class="dfinput" style="width:518px;"/>
-        </li>
-        <li>
-          <label>企业性质<b>*</b></label>
-          <input name="companyType" type="text" id="companyType" class="dfinput" style="width:518px;"/>
-        </li>
-        <li>
-          <p>企业简介&nbsp;(不超过1000字)</p>
-          <textarea class="ckeditor" cols="50" id="companyBrief" name="companyBrief" rows="10"></textarea>
-        </li>
-        <li>
-          <label>企业招聘状态</label>
-          <div class="vocation">
-            <select name="companyState" class="select3">
-              <option value="1">招聘中</option>
-              <option value="2">已暂停</option>
-              <option value="3">已结束</option>
+
+<!-- 表单主体 -->
+<div class="formbody max-w-4xl mx-auto px-4">
+  <div class="usual bg-white rounded-lg shadow-sm p-6">
+    <form name="frm" action="/company/register" method="post" enctype="multipart/form-data" class="space-y-6">
+      <div class="tabson">
+        <ul class="forminfo grid grid-cols-1 md:grid-cols-12 gap-6">
+          <!-- 企业名称 -->
+          <li class="md:col-span-12">
+            <label class="form-label">
+              企业名称
+              <span class="required-indicator">*</span>
+            </label>
+            <input name="companyName" type="text" id="companyName"
+                   class="dfinput w-full px-4 py-2 border border-gray-300 rounded-md form-input-focus"
+                   placeholder="请输入企业名称" />
+          </li>
+
+          <!-- 企业所在地 -->
+          <li class="md:col-span-12">
+            <label class="form-label">
+              企业所在地
+              <span class="required-indicator">*</span>
+            </label>
+            <input name="companyArea" type="text" id="companyArea"
+                   class="dfinput w-full px-4 py-2 border border-gray-300 rounded-md form-input-focus"
+                   placeholder="请输入企业所在地" />
+          </li>
+
+          <!-- 企业规模 -->
+          <li class="md:col-span-12">
+            <label class="form-label">
+              企业规模
+              <span class="required-indicator">*</span>
+            </label>
+            <select name="companySize" id="companySize"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-md form-input-focus bg-white">
+              <option value="">请选择企业规模</option>
+              <option value="1">100人以下</option>
+              <option value="2">100-500人</option>
+              <option value="3">500-1000人</option>
+              <option value="4">1000-5000人</option>
+              <option value="5">5000人以上</option>
             </select>
-          </div>
-        </li>
-        <li>
-          <label>显示排序<b></b></label>
-          <input name="companySort" type="text" class="dfinput" style="width:100px;"/>
-        </li>
-         <li>
-          <label>宣传图片<b>*</b></label>
-          <input name="companyPic" id="companyPic" type="file" class="dfinput" style="width:300px; margin-right:5px;"/>
-        </li>
-        <li>  <label>&nbsp;</label>
-          <input name="" type="submit" class="btn" value="添加"/>
-        </li>
-      </ul>
-    </div>
-  </form>
+          </li>
+
+          <!-- 企业性质 -->
+          <li class="md:col-span-12">
+            <label class="form-label">
+              企业性质
+              <span class="required-indicator">*</span>
+            </label>
+            <select name="companyType" id="companyType"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-md form-input-focus bg-white">
+              <option value="">请选择企业性质</option>
+              <option value="1">国有企业</option>
+              <option value="2">外资企业</option>
+              <option value="3">合资企业</option>
+              <option value="4">民营企业</option>
+              <option value="5">股份制企业</option>
+              <option value="6">上市公司</option>
+            </select>
+          </li>
+
+          <!-- 企业简介 -->
+          <li class="md:col-span-12">
+            <label class="form-label">
+              企业简介
+              <span class="required-indicator">*</span>
+            </label>
+            <textarea class="ckeditor w-full px-4 py-2 border border-gray-300 rounded-md form-input-focus"
+                      cols="50" id="companyBrief" name="companyBrief" rows="10"
+                      placeholder="请输入企业简介（不超过1000字）"></textarea>
+          </li>
+
+          <!-- 企业招聘状态 -->
+          <li class="md:col-span-12">
+            <label class="form-label">
+              企业招聘状态
+              <span class="required-indicator">*</span>
+            </label>
+            <div class="vocation">
+              <select name="companyState" id="companyState"
+                      class="select3 w-full px-4 py-2 border border-gray-300 rounded-md form-input-focus bg-white">
+                <option value="1">招聘中</option>
+                <option value="2">已暂停</option>
+                <option value="3">已结束</option>
+              </select>
+            </div>
+          </li>
+
+          <!-- 显示排序 -->
+          <li class="md:col-span-12">
+            <label class="form-label">
+              显示排序
+            </label>
+            <input name="companySort" type="number" min="1"
+                   class="dfinput w-full px-4 py-2 border border-gray-300 rounded-md form-input-focus"
+                   placeholder="请输入显示排序（数字越小越靠前）" />
+          </li>
+
+          <!-- 宣传图片 -->
+          <li class="md:col-span-12">
+            <label class="form-label">
+              宣传图片
+              <span class="required-indicator">*</span>
+            </label>
+            <div class="flex items-center">
+              <input name="companyPic" id="companyPic" type="file"
+                     class="dfinput px-4 py-2 border border-gray-300 rounded-md form-input-focus" />
+              <div class="ml-4 text-sm text-gray-500">
+                <i class="fa fa-info-circle"></i> 请上传图片（支持JPG、PNG格式，不超过2MB）
+              </div>
+            </div>
+          </li>
+
+          <!-- 提交按钮 -->
+          <li class="md:col-span-12 pt-4">
+            <label>&nbsp;</label>
+            <input name="" type="submit"
+                   class="btn bg-primary hover:bg-primary/90 text-white font-medium px-6 py-2 rounded-md transition duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                   value="添加" />
+          </li>
+        </ul>
+      </div>
+    </form>
   </div>
 </div>
+
+<!-- 表单验证脚本 -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form[name="frm"]');
+
+    // 初始化CKEditor
+    if (typeof CKEDITOR !== 'undefined') {
+      CKEDITOR.replace('companyBrief');
+    }
+
+    form.addEventListener('submit', function(event) {
+      let isValid = true;
+
+      // 验证必填字段
+      const requiredFields = form.querySelectorAll('input[required], select[required]');
+      requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+          isValid = false;
+          field.classList.add('border-danger');
+
+          // 添加错误提示
+          if (!field.nextElementSibling || !field.nextElementSibling.classList.contains('error-message')) {
+            const errorMsg = document.createElement('div');
+            errorMsg.className = 'error-message';
+            errorMsg.textContent = '此字段为必填项';
+            field.parentNode.insertBefore(errorMsg, field.nextSibling);
+          }
+        } else {
+          field.classList.remove('border-danger');
+
+          // 移除错误提示
+          const errorMsg = field.nextElementSibling;
+          if (errorMsg && errorMsg.classList.contains('error-message')) {
+            errorMsg.remove();
+          }
+        }
+      });
+
+      // 验证企业简介（从CKEditor获取内容）
+      if (typeof CKEDITOR !== 'undefined') {
+        const editorData = CKEDITOR.instances.companyBrief.getData();
+        if (!editorData.trim()) {
+          isValid = false;
+          const editorElement = document.querySelector('.cke');
+          editorElement.classList.add('border', 'border-danger');
+
+          if (!editorElement.nextElementSibling || !editorElement.nextElementSibling.classList.contains('error-message')) {
+            const errorMsg = document.createElement('div');
+            errorMsg.className = 'error-message';
+            errorMsg.textContent = '企业简介不能为空';
+            editorElement.parentNode.insertBefore(errorMsg, editorElement.nextSibling);
+          }
+        } else {
+          const editorElement = document.querySelector('.cke');
+          editorElement.classList.remove('border', 'border-danger');
+
+          const errorMsg = editorElement.nextElementSibling;
+          if (errorMsg && errorMsg.classList.contains('error-message')) {
+            errorMsg.remove();
+          }
+        }
+      }
+
+      // 验证图片上传
+      const fileInput = document.getElementById('companyPic');
+      if (!fileInput.value) {
+        isValid = false;
+        fileInput.classList.add('border-danger');
+
+        if (!fileInput.nextElementSibling || !fileInput.nextElementSibling.classList.contains('error-message')) {
+          const errorMsg = document.createElement('div');
+          errorMsg.className = 'error-message';
+          errorMsg.textContent = '请选择企业宣传图片';
+          fileInput.parentNode.insertBefore(errorMsg, fileInput.nextSibling);
+        }
+      } else {
+        fileInput.classList.remove('border-danger');
+
+        const errorMsg = fileInput.nextElementSibling;
+        if (errorMsg && errorMsg.classList.contains('error-message')) {
+          errorMsg.remove();
+        }
+      }
+
+      if (!isValid) {
+        event.preventDefault();
+      }
+    });
+
+    // 为输入字段添加焦点事件，移除错误提示
+    const inputs = form.querySelectorAll('input, select');
+    inputs.forEach(input => {
+      input.addEventListener('focus', function() {
+        this.classList.remove('border-danger');
+
+        const errorMsg = this.nextElementSibling;
+        if (errorMsg && errorMsg.classList.contains('error-message')) {
+          errorMsg.remove();
+        }
+      });
+    });
+
+    // 如果有CKEditor，添加焦点事件处理
+    if (typeof CKEDITOR !== 'undefined') {
+      CKEDITOR.instances.companyBrief.on('focus', function() {
+        const editorElement = document.querySelector('.cke');
+        editorElement.classList.remove('border', 'border-danger');
+
+        const errorMsg = editorElement.nextElementSibling;
+        if (errorMsg && errorMsg.classList.contains('error-message')) {
+          errorMsg.remove();
+        }
+      });
+    }
+  });
+</script>
 </body>
 </html>

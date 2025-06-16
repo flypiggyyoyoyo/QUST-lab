@@ -1,10 +1,8 @@
 package com.flypiggyyoyoyo.demo.controller;
 
-import com.flypiggyyoyoyo.demo.data.user.register.RegisterRequest;
-import com.flypiggyyoyoyo.demo.model.TbUsers;
+
+import com.flypiggyyoyoyo.demo.data.company.register.CompanyRegisterRequest;
 import com.flypiggyyoyoyo.demo.service.TbCompanyService;
-import com.flypiggyyoyoyo.demo.service.TbUsersService;
-import com.flypiggyyoyoyo.demo.service.impl.TbCompanyServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,11 +18,11 @@ public class CompanyController {
 
     // 添加企业
     @PostMapping("/company/register")
-    public String handleRegister(@Valid RegisterRequest request,
+    public String handleRegister(@Valid CompanyRegisterRequest request,
                                  BindingResult bindingResult,
                                  Model model) {
-
-        // System.out.println("注册完成");
-        return "manage/main";
+        companyService.register(request);
+        System.out.println("注册完成");
+        return "manage/companyList";
     }
 }
