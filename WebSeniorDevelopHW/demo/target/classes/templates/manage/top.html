@@ -4,6 +4,40 @@
   <meta charset="utf-8">
   <title>Q_ITOffer锐聘网后台管理系统</title>
   <link th:href="@{/css/manageadmin.css}" rel="stylesheet" type="text/css" />
+
+  <script>
+    function handleLogout(element) {
+      if (!confirm("确定要退出登录吗？")) {
+        return;
+      }
+
+      const link = element; // 接收传递的元素
+      const originalText = link.innerText;
+      link.innerText = "退出中...";
+      link.disabled = true;
+
+      fetch("/logout", {
+        method: "GET",
+        credentials: "same-origin"
+      })
+              .then(response => {
+                if (response.ok) {
+                  // 由后端重定向，无需前端处理
+                  // window.location.href = "/demo/login"; // 注释掉这行
+                } else {
+                  alert("退出失败，请重试");
+                  link.innerText = originalText;
+                  link.disabled = false;
+                }
+              })
+              .catch(error => {
+                console.error("退出请求出错:", error);
+                alert("退出请求出错，请检查网络");
+                link.innerText = originalText;
+                link.disabled = false;
+              });
+    }
+  </script>
 </head>
 <body th:style="|background:url('@{/images/topbg.gif}') repeat-x|">
 <div class="topleft">
@@ -19,7 +53,7 @@
       <a href="#">帮助</a>
     </li>
     <li><a href="#">关于</a></li>
-    <li><a th:href="@{/login.html}" target="_parent">退出</a></li>
+    <li><a th:href="@{/demo/login}" target="_parent" onclick="handleLogout(this)">退出</a></li>
   </ul>
   <div class="user"><span>admin</span></div>
 </div>

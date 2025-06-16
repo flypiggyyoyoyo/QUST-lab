@@ -17,6 +17,8 @@ import com.flypiggyyoyoyo.demo.mapper.TbUsersMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
 * @author flypiggy
 * @description 针对表【tb_users】的数据库操作Service实现
@@ -27,43 +29,43 @@ public class TbUsersServiceImpl extends ServiceImpl<TbUsersMapper, TbUsers>
     implements TbUsersService{
 
     @Override
-    public UserLoginResponse login(UserLoginRequest request) {
+    public UserLoginResponse login(UserLoginRequest request, HttpServletRequest servletRequest) {
+        QueryWrapper<TbUsers> wrapper = new QueryWrapper<>();
+        wrapper.eq("USER_LOGNAME", request.getUserName());
+
+        TbUsers user = this.getOnly(wrapper,true);
+
+        // 用户是否已经注册
+        if (user == null) {
+            throw new UserException(ErrorEnum.USER_NOT_EXIST);
+        }
+
+        // 验证密码
+        String encryptedPassword= DigestUtils.md5DigestAsHex(request.getPassword().getBytes());
+        if(!user.getUserPwd().equals(encryptedPassword)){
+            throw new UserException(ErrorEnum.PASSWORD_ERROR);
+        }
+
+        // 1. 从Session中获取存储的验证码
+        String storedCode = (String) servletRequest.getSession().getAttribute("validateCode");
+
+        // 2. 获取用户输入的验证码
+        String userInputCode = request.getCode();
+
+        // 3. 验证验证码（忽略大小写）
+        if (storedCode == null || !storedCode.equalsIgnoreCase(userInputCode)) {
+            throw new UserException(ErrorEnum.CAPTCHA_ERROR);
+        }
+
+        // 4. 验证通过后，删除Session中的验证码（防止重复使用）
+        servletRequest.getSession().removeAttribute("validateCode");
+
         UserLoginResponse response = new UserLoginResponse();
 
-        // TODO: 实现登录验证逻辑
-        // 1. 根据用户名查询用户
-        // TbUsers user = usersMapper.selectByUsername(request.getUsername());
-
-        // 2. 验证用户是否存在
-        // if (user == null) {
-        //     response.setSuccess(false);
-        //     response.setMessage("用户不存在");
-        //     return response;
-        // }
-
-        // 3. 验证密码
-        // if (!user.getPassword().equals(request.getPassword())) {
-        //     response.setSuccess(false);
-        //     response.setMessage("密码错误");
-        //     return response;
-        // }
-
-        // 4. 验证验证码
-        // String sessionCode = (String) request.getSession().getAttribute("captcha");
-        // if (!sessionCode.equalsIgnoreCase(request.getValidateCode())) {
-        //     response.setSuccess(false);
-        //     response.setMessage("验证码错误");
-        //     return response;
-        // }
-
-        // 5. 验证通过
-        // response.setSuccess(true);
-        // response.setUsername(user.getUsername());
-        // response.setUserId(user.getId());
-
-        // 模拟验证通过
-        response.setCode(SuccessEnum.LOGIN_SUCCESS.getCode());
-        response.setUserName(request.getUserName());
+        response.setUserName(request.getUserName())
+                .setUserId(user.getUserId())
+                .setRole(user.getUserRole())
+                .setCode(SuccessEnum.LOGIN_SUCCESS.getCode());
 
         return response;
     }

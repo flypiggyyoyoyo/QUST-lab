@@ -8,12 +8,11 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class UserLoginResponse {
     private int code;             // 状态码（使用枚举类中的 code）
-    private String message;       // 状态消息（使用枚举类中的 message）
 
-    private String userId;        // 用户ID
+    private int userId;        // 用户ID
     private String userName;      // 用户名
     private String userEmail;     // 用户邮箱
-    private String role;          // 角色
+    private int role;          // 角色
 
 //    登录令牌
 //    private String token;         // 访问令牌
