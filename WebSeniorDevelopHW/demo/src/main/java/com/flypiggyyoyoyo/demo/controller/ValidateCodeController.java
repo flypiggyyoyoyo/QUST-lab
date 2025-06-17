@@ -1,6 +1,7 @@
 package com.flypiggyyoyoyo.demo.controller;
 
 import com.flypiggyyoyoyo.demo.utils.ValidateCodeUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Controller
 @RequestMapping("/api")
 public class ValidateCodeController {
@@ -31,6 +33,8 @@ public class ValidateCodeController {
         String code = ValidateCodeUtils.generateCodeImage(
                 100, 40, 4, response.getOutputStream()
         );
+
+        log.info("验证码重刷");
 
         // 将验证码存储到Session中
         session.setAttribute("validateCode", code);

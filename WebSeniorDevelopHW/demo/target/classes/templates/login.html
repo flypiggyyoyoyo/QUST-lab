@@ -179,7 +179,7 @@
 							var regex = /errorMsg='([^']+)'/;
 							var match = data.match(regex);
 
-							if (match &amp;&amp; match[1]) {
+							if (match && match[1]) {
 								errorMsg = match[1];
 							}
 
@@ -245,8 +245,7 @@
 			</div>
 			<div>
 				验证码：<input name="code" id="validateCode" type="text" class="yzm_input" />
-				<img id="captchaImg" src="/api/captcha" alt="验证码" onclick="refreshCaptcha()" style="vertical-align: middle;">
-<!--				<span class="refresh-code" onclick="refreshCaptcha()">刷新</span>-->
+				<img id="captchaImg" src="/api/captcha" alt="验证码" onclick="refreshCaptcha()" style="vertical-align: middle; cursor: pointer;">
 			</div>
 			<div class="error-message" id="errorMessage"></div>
 			<div align="center">
