@@ -12,7 +12,7 @@ public class CompanyRegisterRequest {
     private String companyName;
 
     @NotEmpty
-    private String companyAddress;
+    private String companyArea;
 
     @NotEmpty
     private String companySize;

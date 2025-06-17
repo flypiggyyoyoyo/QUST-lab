@@ -60,7 +60,7 @@ public class TbCompanyServiceImpl extends ServiceImpl<TbCompanyMapper, TbCompany
     @Override
     public CompanyRegisterResponse register(CompanyRegisterRequest request) {
         String companyName = request.getCompanyName();
-        String companyAddress = request.getCompanyAddress();
+        String companyArea = request.getCompanyArea();
         String companySize = request.getCompanySize();
         String companyType = request.getCompanyType();
         String companyBrief = request.getCompanyBrief();
@@ -85,7 +85,7 @@ public class TbCompanyServiceImpl extends ServiceImpl<TbCompanyMapper, TbCompany
 
         TbCompany company = new TbCompany()
                 .setCompanyName(companyName)
-                .setCompanyArea(companyAddress)
+                .setCompanyArea(companyArea)
                 .setCompanySize(companySizeText)  // 设置转换后的文本
                 .setCompanyType(companyTypeText)  // 设置转换后的文本
                 .setCompanyBrief(companyBrief)
