@@ -36,6 +36,8 @@ public class FrameController {
     public String companyListFrame() {return "manage/companyList";}
 
     // 企业添加
-    @GetMapping("/companyAdd.html")
-    public String companyAddFrame() {return "manage/companyAdd";}
+    @GetMapping("/company/add")
+    public String companyAdd() {
+        return "manage/companyAdd";
+    }
 }

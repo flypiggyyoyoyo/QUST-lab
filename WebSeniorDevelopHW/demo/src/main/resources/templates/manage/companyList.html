@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="utf-8">
   <title>企业列表</title>
@@ -22,7 +23,7 @@
 <div class="rightinfo">
   <div class="tools">
     <ul class="toolbar">
-      <li class="click"><span><img th:src="@{/images/t01.png}" /></span><a href="companyAdd.html" target="rightFrame">添加</a></li>
+      <li class="click"><span><img th:src="@{/images/t01.png}" /></span><a th:href="@{/company/add}" target="rightFrame">添加</a></li>
       <li><span><img th:src="@{/images/t03.png}" /></span><a href="companyDelete.html" target="rightFrame">删除</a></li>
     </ul>
 
@@ -30,17 +31,18 @@
     <div class="search-container">
       <select class="filter-select" id="companyFilter">
         <option value="">所有企业</option>
-        <option value="large">大型企业(1000人以上)</option>
-        <option value="medium">中型企业(100-1000人)</option>
-        <option value="small">小型企业(100人以下)</option>
+        <option value="大型企业" th:selected="${size == '大型企业'}">大型企业(1000人以上)</option>
+        <option value="中型企业" th:selected="${size == '中型企业'}">中型企业(100-1000人)</option>
+        <option value="小型企业" th:selected="${size == '小型企业'}">小型企业(100人以下)</option>
       </select>
 
       <!-- 企业查询输入框 -->
-      <input type="text" class="search-input" id="companySearch" placeholder="请输入企业名称">
+      <input type="text" class="search-input" id="companySearch" th:value="${name}" placeholder="请输入企业名称">
       <button class="search-btn" id="searchBtn">搜索</button>
     </div>
   </div>
 
+  <!-- 企业列表表格 -->
   <table class="imgtable">
     <thead>
     <tr>
@@ -55,55 +57,64 @@
       <th>操作</th>
     </tr>
     </thead>
-    <tbody>
-    <tr height="50px">
+    <tbody th:if="${not #lists.isEmpty(companyList)}">
+    <tr th:each="company : ${companyList}" height="50px">
       <td><input name="" type="checkbox" value="" /></td>
-      <td>凌志软件股份有限公司</td>
-      <td>苏州市</td>
-      <td>1000人以上</td>
-      <td>股份制企业</td>
-      <td>招聘中</td>
-      <td>1</td>
-      <td>1234</td>
-      <td><a href="companyAdd.html" class="tablelink">修改</a> &nbsp;&nbsp;<a href="#" class="tablelink">删除</a></td>
+      <td th:text="${company.companyName}">企业名称</td>
+      <td th:text="${company.companyArea}">所在地</td>
+      <td th:text="${company.companySize}">企业规模</td>
+      <td th:text="${company.companyType}">企业性质</td>
+      <td>
+        <span th:if="${company.companyState == 1}" class="text-green">招聘中</span>
+        <span th:if="${company.companyState != 1}" class="text-gray">暂停招聘</span>
+      </td>
+      <td th:text="${company.companySort}">排序</td>
+      <td th:text="${company.companyViewnum}">浏览数</td>
+      <td>
+        <a th:href="@{/company/edit(companyId=${company.companyId})}" class="tablelink">修改</a>
+        &nbsp;&nbsp;
+        <a href="javascript:void(0);" onclick="deleteCompany(${company.companyId})" class="tablelink">删除</a>
+      </td>
     </tr>
-    <tr height="50px">
-      <td><input name="" type="checkbox" value="" /></td>
-      <td>苏州大宇宙信息创造有限公司</td>
-      <td>苏州市</td>
-      <td>100-200人</td>
-      <td>外资企业</td>
-      <td>招聘中</td>
-      <td>1</td>
-      <td>1234</td>
-      <td><a href="companyAdd.html" class="tablelink">修改</a> &nbsp;&nbsp;<a href="#" class="tablelink">删除</a></td>
-    </tr>
-    <tr height="50px">
-      <td><input name="" type="checkbox" value="" /></td>
-      <td>北京日立华胜信息系统有限公司</td>
-      <td>东城区</td>
-      <td>200-500人</td>
-      <td>合资企业</td>
-      <td>招聘中</td>
-      <td>1</td>
-      <td>1234</td>
-      <td><a href="companyAdd.html" class="tablelink">修改</a> &nbsp;&nbsp;<a href="#" class="tablelink">删除</a></td>
+    </tbody>
+    <tbody th:unless="${not #lists.isEmpty(companyList)}">
+    <tr>
+      <td colspan="9" style="text-align:center;">暂无企业数据</td>
     </tr>
     </tbody>
   </table>
 
+  <!-- 分页组件 -->
   <div class="pagin">
-    <div class="message">共<i class="blue">1256</i>条记录，当前显示第&nbsp;<i class="blue">2&nbsp;</i>页</div>
+    <div class="message">
+      共<i class="blue" th:text="${totalCount}">0</i>条记录，
+      当前显示第&nbsp;<i class="blue" th:text="${currentPage}">1&nbsp;</i>页
+    </div>
     <ul class="paginList">
-      <li class="paginItem"><a href="javascript:;"><span class="pagepre"></span></a></li>
-      <li class="paginItem"><a href="javascript:;">1</a></li>
-      <li class="paginItem current"><a href="javascript:;">2</a></li>
-      <li class="paginItem"><a href="javascript:;">3</a></li>
-      <li class="paginItem"><a href="javascript:;">4</a></li>
-      <li class="paginItem"><a href="javascript:;">5</a></li>
-      <li class="paginItem more"><a href="javascript:;">...</a></li>
-      <li class="paginItem"><a href="javascript:;">10</a></li>
-      <li class="paginItem"><a href="javascript:;"><span class="pagenxt"></span></a></li>
+      <li class="paginItem">
+        <a th:href="@{/company/list(page=1, name=${name}, size=${size})}" th:if="${currentPage > 1}">
+          <span class="pagepre"></span>
+        </a>
+        <a href="javascript:;" th:unless="${currentPage > 1}">
+          <span class="pagepre" style="opacity:0.5; cursor:not-allowed;"></span>
+        </a>
+      </li>
+
+      <!-- 动态生成页码，使用Thymeleaf标准语法 -->
+      <th:each="page : ${#numbers.sequence(1, totalPages != null ? totalPages : 1)}">
+      <a th:href="@{/company/list(page=${i}, name=${name}, size=${size})}"
+           th:classappend="${i == currentPage} ? ' current' : ''"
+           th:text="${i}">1</a>
+      </li>
+      <li class="paginItem more" th:if="${totalPages > 5}"><a href="javascript:;">...</a></li>
+      <li class="paginItem" th:if="${totalPages > 0}">
+        <a th:href="@{/company/list(page=${totalPages}, name=${name}, size=${size})}" th:if="${currentPage < totalPages}">
+          <span class="pagenxt"></span>
+        </a>
+        <a href="javascript:;" th:unless="${currentPage < totalPages}">
+          <span class="pagenxt" style="opacity:0.5; cursor:not-allowed;"></span>
+        </a>
+      </li>
     </ul>
   </div>
 </div>
@@ -114,9 +125,9 @@
     $("#searchBtn").click(function() {
       const searchText = $("#companySearch").val();
       const companyFilter = $("#companyFilter").val();
-      // 这里可以添加搜索逻辑，例如发送AJAX请求
-      console.log("搜索关键词:", searchText);
-      console.log("企业规模筛选:", companyFilter);
+      // 跳转到搜索结果页面，携带参数
+      window.location.href = "/company/list?name=" + encodeURIComponent(searchText) +
+              "&size=" + companyFilter;
     });
 
     // 回车搜索
@@ -129,10 +140,18 @@
     // 企业规模筛选
     $("#companyFilter").change(function() {
       const filter = $(this).val();
-      // 这里可以添加筛选表格的逻辑
-      console.log("筛选企业规模:", filter);
+      const searchText = $("#companySearch").val();
+      window.location.href = "/company/list?name=" + encodeURIComponent(searchText) +
+              "&size=" + filter;
     });
   });
+
+  // 删除企业
+  function deleteCompany(companyId) {
+    if (confirm("确定要删除该企业吗？")) {
+      window.location.href = "/company/delete?companyId=" + companyId;
+    }
+  }
 </script>
 </body>
 </html>

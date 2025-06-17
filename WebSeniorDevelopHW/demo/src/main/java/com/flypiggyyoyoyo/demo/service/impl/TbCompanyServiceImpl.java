@@ -1,6 +1,8 @@
 package com.flypiggyyoyoyo.demo.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.flypiggyyoyoyo.demo.constants.ErrorEnum;
 import com.flypiggyyoyoyo.demo.constants.SuccessEnum;
@@ -101,6 +103,33 @@ public class TbCompanyServiceImpl extends ServiceImpl<TbCompanyMapper, TbCompany
         response.setCode(SuccessEnum.REGISTER_SUCCESS.getCode());
 
         return response;
+    }
+
+    @Override
+    public IPage<TbCompany> getCompanyPage(int pageNum, int pageSize, String name, String size) {
+        // 创建分页对象
+        Page<TbCompany> page = new Page<>(pageNum, pageSize);
+
+        // 构建查询条件
+        QueryWrapper<TbCompany> queryWrapper = new QueryWrapper<>();
+        if (name != null && !name.isEmpty()) {
+            queryWrapper.like("company_name", name);
+        }
+        if (size != null && !size.isEmpty()) {
+            queryWrapper.eq("company_size", size);
+        }
+
+        // 添加排序条件
+        queryWrapper.orderByAsc("company_sort");
+
+        System.out.println("查询条件: " + queryWrapper.getSqlSegment());
+
+        // 执行分页查询
+        IPage<TbCompany> result = baseMapper.selectPage(page, queryWrapper);
+        System.out.println("查询结果总数: " + result.getTotal());
+        System.out.println("当前页记录数: " + result.getRecords().size());
+
+        return result;
     }
 
     private boolean isRegister(String companyName) {
