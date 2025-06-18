@@ -1,98 +1,228 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
     <title>企业信息编辑</title>
-    <base th:href="@{/}">
     <link th:href="@{/css/manageadmin.css}" rel="stylesheet" type="text/css" />
-    <script th:src="@{/js/jquery.js}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script th:src="@{/ckeditor/ckeditor.js}"></script>
     <script>
-        // 表单验证函数
-        function validate() {
-            if (!document.getElementById("companyName").value.trim()) {
-                alert("企业名称不能为空！");
-                document.getElementById("companyName").focus();
-                return false;
-            }
-            if (!document.getElementById("companyArea").value.trim()) {
-                alert("企业所在地不能为空！");
-                document.getElementById("companyArea").focus();
-                return false;
-            }
-            if (!document.getElementById("companySize").value.trim()) {
-                alert("企业规模不能为空！");
-                document.getElementById("companySize").focus();
-                return false;
-            }
-            if (!document.getElementById("companyType").value.trim()) {
-                alert("企业性质不能为空！");
-                document.getElementById("companyType").focus();
-                return false;
-            }
-            return true;
-        }
+        // 验证 jQuery 是否正确加载
+        if (typeof jQuery === 'undefined') {
+            console.error('❌ jQuery 加载失败！');
+            alert('系统错误：jQuery 未正确加载，请联系管理员');
+        } else {
+            console.log('✅ jQuery 加载成功，版本：' + jQuery.fn.jquery);
 
-        // 页面加载完成后初始化CKEditor
-        $(document).ready(function() {
-            if (CKEDITOR) {
-                CKEDITOR.replace('companyBrief');
-            }
-        });
+            // 使用 jQuery 全称而非 $，避免冲突
+            jQuery(document).ready(function($) {
+                console.log('页面 DOM 加载完成');
 
-        $(function(){
-            // 记录最终要写到隐藏域的 URL，初始用旧图
-            let finalUrl = $('input[name=companyOldPic]').val();
+                // 初始化CKEditor
+                if (typeof CKEDITOR !== 'undefined') {
+                    try {
+                        // 先检查是否已经初始化，避免重复初始化
+                        if (CKEDITOR.instances.companyBrief) {
+                            CKEDITOR.instances.companyBrief.destroy();
+                        }
+                        CKEDITOR.replace('companyBrief');
+                        console.log('✅ CKEditor 初始化成功');
+                    } catch (err) {
+                        console.error('❌ CKEditor 初始化失败：', err);
+                    }
+                } else {
+                    console.warn('⚠️ CKEDITOR 未定义，无法初始化富文本编辑器');
+                }
 
-            // 监听 file 选中事件
-            $('#companyPic').on('change', function(){
-                const file = this.files[0];
-                if (!file) return;
+                // 获取DOM元素引用
+                const $fileInput = $('#companyPicFile'); // 文件选择器
+                const $hiddenInput = $('#companyPic');   // 隐藏域
+                const $previewImg = $('#picPreview');    // 预览图片
+                const $uploadStatus = $('#uploadStatus'); // 上传状态提示
 
-                // 1) 请求 presigned URL
-                $.ajax({
-                    url: '/uploadUrl',      // 你后端的 presign 接口
-                    method: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({ fileName: file.name }),
-                    success(resp) {
-                        // resp.uploadUrl, resp.downloadUrl
-                        // 2) 用 fetch PUT 到 MinIO
-                        fetch(resp.uploadUrl, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': file.type },
-                            body: file
-                        })
-                            .then(r => {
-                                if (!r.ok) throw new Error('上传失败，状态 ' + r.status);
-                                // 3) 上传成功，记录 downloadUrl
-                                finalUrl = resp.downloadUrl;
-                                // 更新隐藏域，为 form submit 做准备
-                                $('input[name=companyOldPic]').val(finalUrl);
-                                // 可选：更新页面预览
-                                $('img[th\\:src]').attr('src', finalUrl);
+                // 检查元素是否存在
+                if (!$fileInput.length) {
+                    console.error('❌ 未找到文件选择器元素 #companyPicFile');
+                }
+                if (!$hiddenInput.length) {
+                    console.error('❌ 未找到隐藏域元素 #companyPic');
+                }
+                if (!$previewImg.length) {
+                    console.error('❌ 未找到预览图片元素 #picPreview');
+                }
+
+                // 初始值
+                let finalUrl = $hiddenInput.val();
+                let selectedFile = null; // 存储选中的文件
+                console.log('初始 finalUrl =', finalUrl);
+
+                // 更新预览图片
+                function updatePreview(url) {
+                    if (url) {
+                        $previewImg.attr('src', url);
+                        $previewImg.show();
+
+                        // 清除之前的事件绑定，然后重新绑定
+                        $previewImg.off('error').on('error', function() {
+                            console.error('❌ 图片加载失败：', url);
+                            $(this).attr('src', 'https://picsum.photos/100/100?error=image_not_found');
+                            $(this).attr('title', '图片加载失败，请检查URL是否有效');
+                        });
+                    } else {
+                        $previewImg.hide();
+                    }
+                }
+
+                // 初始化预览
+                updatePreview(finalUrl);
+
+                // 文件选择变化时，只做预览，不上传
+                if ($fileInput.length) {
+                    $fileInput.on('change', function() {
+                        const file = this.files[0];
+                        if (!file) {
+                            selectedFile = null;
+                            $uploadStatus.text('').css('color', '#666');
+                            return;
+                        }
+
+                        console.log('选中的文件:', file);
+
+                        // 验证文件类型和大小
+                        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+                        if (!allowedTypes.includes(file.type)) {
+                            alert('请上传 JPG、PNG 或 GIF 格式的图片');
+                            $(this).val('');
+                            selectedFile = null;
+                            $uploadStatus.text('').css('color', '#666');
+                            return;
+                        }
+
+                        if (file.size > 2 * 1024 * 1024) { // 2MB
+                            alert('图片大小不能超过 2MB');
+                            $(this).val('');
+                            selectedFile = null;
+                            $uploadStatus.text('').css('color', '#666');
+                            return;
+                        }
+
+                        // 存储选中的文件，显示预览
+                        selectedFile = file;
+                        $uploadStatus.text('已选择文件，点击保存时将上传').css('color', '#2196F3');
+
+                        // 本地预览
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            updatePreview(e.target.result);
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                }
+
+                // 上传文件到MinIO的函数
+                function uploadFileToMinio(file) {
+                    return new Promise((resolve, reject) => {
+                        // 请求 presigned URL
+                        $.ajax({
+                            url: '/uploadUrl',
+                            method: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify({ fileName: file.name }),
+                            success(resp) {
+                                console.log('✅ 获取上传 URL 成功:', resp);
+
+                                // 上传图片
+                                fetch(resp.uploadUrl, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': file.type },
+                                    body: file
+                                })
+                                    .then(r => {
+                                        if (!r.ok) throw new Error('状态 ' + r.status);
+
+                                        console.log('✅ 上传成功，downloadUrl =', resp.downloadUrl);
+                                        resolve(resp.downloadUrl);
+                                    })
+                                    .catch(err => {
+                                        console.error('❌ 图片上传失败：', err);
+                                        reject(err);
+                                    });
+                            },
+                            error(xhr, status, error) {
+                                console.error('❌ 获取上传地址失败：', status, error);
+                                console.error('响应内容：', xhr.responseText);
+                                reject(new Error('获取上传地址失败：' + error));
+                            }
+                        });
+                    });
+                }
+
+                // 表单提交处理
+                $('form[name="frm"]').on('submit', function(e) {
+                    e.preventDefault(); // 阻止默认提交
+
+                    console.log('表单提交开始');
+
+                    // 检查CKEditor内容
+                    if (CKEDITOR && CKEDITOR.instances.companyBrief) {
+                        // 将CKEditor内容同步到textarea
+                        CKEDITOR.instances.companyBrief.updateElement();
+                    }
+
+                    // 验证必填字段
+                    let isValid = true;
+                    $(this).find('[required]').each(function() {
+                        if (!$(this).val()) {
+                            alert('请填写所有必填字段');
+                            isValid = false;
+                            return false; // 中断循环
+                        }
+                    });
+
+                    if (!isValid) return;
+
+                    // 如果有选中的文件，先上传到MinIO
+                    if (selectedFile) {
+                        $uploadStatus.text('正在上传图片...').css('color', '#FF9800');
+
+                        uploadFileToMinio(selectedFile)
+                            .then(downloadUrl => {
+                                // 上传成功，更新隐藏域
+                                finalUrl = downloadUrl;
+                                $hiddenInput.val(finalUrl);
+                                console.log('✅ 图片上传完成，finalUrl =', finalUrl);
+
+                                $uploadStatus.text('图片上传完成，正在保存...').css('color', '#4CAF50');
+
+                                // 提交表单到后端
+                                submitForm();
                             })
                             .catch(err => {
-                                alert('图片上传出错：' + err.message);
-                                // 清空 file input
-                                $('#companyPic').val('');
+                                $uploadStatus.text('图片上传失败').css('color', '#F44336');
+                                alert('图片上传失败：' + err.message);
                             });
-                    },
-                    error() {
-                        alert('获取上传地址失败，请稍后重试');
-                        $('#companyPic').val('');
+                    } else {
+                        // 没有选择新文件，直接提交表单
+                        console.log('没有选择新文件，直接提交表单');
+                        submitForm();
+                    }
+
+                    // 提交表单的函数
+                    function submitForm() {
+                        console.log('提交表单，finalUrl =', finalUrl);
+                        $hiddenInput.val(finalUrl);
+
+                        // 移除事件监听器，避免重复提交
+                        $('form[name="frm"]').off('submit');
+
+                        // 提交表单
+                        $('form[name="frm"]')[0].submit();
                     }
                 });
             });
-
-            // 确保提交前隐藏域里总是最新 URL
-            $('form[name=frm]').on('submit', function(){
-                $('input[name=companyOldPic]').val(finalUrl);
-                return validate();
-            });
-        });
+        }
     </script>
+
 </head>
 <body class="bg-f0f9fd font-sans">
 <div class="place">
@@ -102,79 +232,66 @@
         <li><a href="#">企业信息编辑</a></li>
     </ul>
 </div>
+
 <div class="formbody">
     <div class="usual">
-        <form name="frm" th:action="@{/company/update}" method="post"
-              enctype="multipart/form-data" onsubmit="return validate();">
+        <form name="frm" th:action="@{/company/update}" method="post" enctype="multipart/form-data">
             <div class="tabson">
                 <ul class="forminfo">
                     <li>
                         <label>企业名称<b class="text-danger">*</b></label>
-                        <input th:name="companyName" type="text"
-                               th:value="${company.companyName}" id="companyName"
-                               class="dfinput" style="width:518px;" />
+                        <input th:name="companyName" type="text" th:value="${company.companyName}" id="companyName" class="dfinput" style="width:518px;" required/>
                     </li>
                     <li>
                         <label>企业所在地<b class="text-danger">*</b></label>
-                        <input th:name="companyArea" type="text"
-                               th:value="${company.companyArea}" id="companyArea"
-                               class="dfinput" style="width:518px;" />
+                        <input th:name="companyArea" type="text" th:value="${company.companyArea}" id="companyArea" class="dfinput" style="width:518px;" required/>
                     </li>
                     <li>
                         <label>企业规模<b class="text-danger">*</b></label>
-                        <input th:name="companySize" type="text"
-                               th:value="${company.companySize}" id="companySize"
-                               class="dfinput" style="width:518px;" />
+                        <input th:name="companySize" type="text" th:value="${company.companySize}" id="companySize" class="dfinput" style="width:518px;" required/>
                     </li>
                     <li>
                         <label>企业性质<b class="text-danger">*</b></label>
-                        <input th:name="companyType" type="text"
-                               th:value="${company.companyType}" id="companyType"
-                               class="dfinput" style="width:518px;" />
+                        <input th:name="companyType" type="text" th:value="${company.companyType}" id="companyType" class="dfinput" style="width:518px;" required/>
                     </li>
                     <li>
                         <p>企业简介&nbsp;(不超过1000字)</p>
-                        <textarea class="ckeditor" cols="50" id="companyBrief"
-                                  th:name="companyBrief" rows="10"
-                                  th:text="${company.companyBrief}"></textarea>
+                        <textarea class="ckeditor" cols="50" id="companyBrief" th:name="companyBrief" rows="10" th:text="${company.companyBrief}"></textarea>
                     </li>
                     <li>
                         <label>企业招聘状态</label>
                         <div class="vocation">
                             <select th:name="companyState" class="select3">
-                                <option value="1" th:selected="${company.companyState == 1}">
-                                    招聘中
-                                </option>
-                                <option value="2" th:selected="${company.companyState == 2}">
-                                    已暂停
-                                </option>
-                                <option value="3" th:selected="${company.companyState == 3}">
-                                    已结束
-                                </option>
+                                <option value="1" th:selected="${company.companyState == 1}">招聘中</option>
+                                <option value="2" th:selected="${company.companyState == 2}">已暂停</option>
+                                <option value="3" th:selected="${company.companyState == 3}">已结束</option>
                             </select>
                         </div>
                     </li>
                     <li>
                         <label>显示排序</label>
-                        <input th:name="companySort" type="text"
-                               th:value="${company.companySort}" class="dfinput"
-                               style="width:100px;" />
+                        <input th:name="companySort" type="text" th:value="${company.companySort}" class="dfinput" style="width:100px;" />
                     </li>
                     <li>
                         <label>宣传图片<b class="text-danger">*</b></label>
-                        <!-- 预览：Thymeleaf 渲染旧图 -->
-                        <img th:src="${company.companyPic}" height="100px" width="100px"/>
-                        <!-- 让用户选新文件 -->
-                        <input th:name="companyPic" id="companyPic" type="file" class="dfinput"
-                               style="width:300px; margin-right:5px;"/>
-                        <!-- 隐藏域：最终要写到 DTO 的 URL -->
-                        <input name="companyOldPic" th:value="${company.companyPic}" type="hidden"/>
+                        <!-- 预览图片 -->
+                        <img id="picPreview" th:src="${company.companyPic}" height="100" width="100" style="margin-bottom: 10px; display: block;"
+                             onerror="this.src='https://picsum.photos/100/100?error=image_not_found'; this.title='图片加载失败，请检查URL是否有效';" />
+                        <!-- 文件选择 -->
+                        <input id="companyPicFile" type="file" class="dfinput" style="width:300px; margin-right:5px;"/>
+                        <!-- 上传状态提示 -->
+                        <span id="uploadStatus" style="color: #666; margin-left: 10px; font-size: 12px;"></span>
+                        <br>
+                        <!-- 隐藏域 -->
+                        <input id="companyPic" name="companyPic" th:value="${company.companyPic}" type="hidden"/>
+                        <div class="text-sm text-gray-500 mt-1">
+                            <i class="fa fa-info-circle"></i> 支持 JPG/PNG/GIF，不超过2MB
+                        </div>
                     </li>
                     <li>
-                        <input th:name="companyId" th:value="${company.companyId}"
-                               type="hidden" />
-                        <input name="type" value="update" type="hidden" />
-                        <input name="" type="submit" class="btn" value="保存修改" />
+                        <input th:name="companyId" th:value="${company.companyId}" type="hidden"/>
+                        <input name="type" value="update" type="hidden"/>
+                        <input type="submit" class="btn" value="保存修改"/>
                     </li>
                 </ul>
             </div>

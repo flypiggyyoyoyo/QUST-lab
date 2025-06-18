@@ -10,10 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -73,28 +70,7 @@ public class CompanyController {
     }
 
     @PostMapping("/update")
-    public String updateCompany(
-            @RequestParam("companyId") Long companyId,
-            @RequestParam("companyName") String companyName,
-            @RequestParam("companyArea") String companyArea,
-            @RequestParam("companySize") String companySize,
-            @RequestParam("companyType") String companyType,
-            @RequestParam("companyBrief") String companyBrief,
-            @RequestParam("companyState") Integer companyState,
-            @RequestParam("companySort") Integer companySort,
-            @RequestParam("companyOldPic") String companyPic  // 前端隐藏域
-    ) {
-        CompanyUpdateRequest req = new CompanyUpdateRequest();
-        req.setCompanyId(companyId);
-        req.setCompanyName(companyName);
-        req.setCompanyArea(companyArea);
-        req.setCompanySize(companySize);
-        req.setCompanyType(companyType);
-        req.setCompanyBrief(companyBrief);
-        req.setCompanyState(companyState);
-        req.setCompanySort(companySort);
-        req.setCompanyPic(companyPic);
-
+    public String updateCompany(@ModelAttribute CompanyUpdateRequest req) {
         companyService.updateCompany(req);
         return "redirect:/company/list";
     }
