@@ -23,7 +23,7 @@ public class OSSUtils {
     private MinioClient minioClient;
 
     //从配置文件中读取 MinIO 服务的基础 URL，用于构建下载 URL
-    @Value("{minio.url}")
+    @Value("${minio.url}")
     private String url;
 
     /**

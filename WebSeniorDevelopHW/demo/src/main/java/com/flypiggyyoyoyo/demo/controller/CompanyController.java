@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.flypiggyyoyoyo.demo.data.company.register.CompanyRegisterRequest;
 import com.flypiggyyoyoyo.demo.model.TbCompany;
 import com.flypiggyyoyoyo.demo.service.TbCompanyService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
 
+@Slf4j
 @Controller
 @RequestMapping("/company")
 public class CompanyController {
@@ -26,6 +28,8 @@ public class CompanyController {
     public String handleRegister(@Valid CompanyRegisterRequest request,
                                  BindingResult bindingResult,
                                  Model model) {
+
+        log.info("企业图片: {}", request.getCompanyPic());
         companyService.register(request);
         System.out.println("注册完成");
         return "manage/companyList";

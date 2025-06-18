@@ -62,7 +62,7 @@
 <!-- 表单主体 -->
 <div class="formbody max-w-4xl mx-auto px-4">
   <div class="usual bg-white rounded-lg shadow-sm p-6">
-    <form name="frm" action="/company/register" method="post" enctype="multipart/form-data" class="space-y-6">
+    <form id="companyForm" name="frm" action="/company/register" method="post" enctype="multipart/form-data" class="space-y-6">
       <div class="tabson">
         <ul class="forminfo grid grid-cols-1 md:grid-cols-12 gap-6">
           <!-- 企业名称 -->
@@ -73,6 +73,7 @@
             </label>
             <input name="companyName" type="text" id="companyName"
                    class="dfinput w-full px-4 py-2 border border-gray-300 rounded-md form-input-focus"
+                   required
                    placeholder="请输入企业名称" />
           </li>
 
@@ -84,6 +85,7 @@
             </label>
             <input name="companyArea" type="text" id="companyArea"
                    class="dfinput w-full px-4 py-2 border border-gray-300 rounded-md form-input-focus"
+                   required
                    placeholder="请输入企业所在地" />
           </li>
 
@@ -94,6 +96,7 @@
               <span class="required-indicator">*</span>
             </label>
             <select name="companySize" id="companySize"
+                    required
                     class="w-full px-4 py-2 border border-gray-300 rounded-md form-input-focus bg-white">
               <option value="">请选择企业规模</option>
               <option value="1">100人以下</option>
@@ -111,6 +114,7 @@
               <span class="required-indicator">*</span>
             </label>
             <select name="companyType" id="companyType"
+                    required
                     class="w-full px-4 py-2 border border-gray-300 rounded-md form-input-focus bg-white">
               <option value="">请选择企业性质</option>
               <option value="1">国有企业</option>
@@ -130,6 +134,7 @@
             </label>
             <textarea class="ckeditor w-full px-4 py-2 border border-gray-300 rounded-md form-input-focus"
                       cols="50" id="companyBrief" name="companyBrief" rows="10"
+                      required
                       placeholder="请输入企业简介（不超过1000字）"></textarea>
           </li>
 
@@ -141,6 +146,7 @@
             </label>
             <div class="vocation">
               <select name="companyState" id="companyState"
+                      required
                       class="select3 w-full px-4 py-2 border border-gray-300 rounded-md form-input-focus bg-white">
                 <option value="1">招聘中</option>
                 <option value="2">已暂停</option>
@@ -159,19 +165,20 @@
                    placeholder="请输入显示排序（数字越小越靠前）" />
           </li>
 
-          <!-- 宣传图片 -->
+          <!-- 宣传图片（只选，不直接上传） -->
           <li class="md:col-span-12">
-            <label class="form-label">
-              宣传图片
-              <span class="required-indicator">*</span>
-            </label>
+            <label class="form-label">宣传图片<span class="required-indicator">*</span></label>
             <div class="flex items-center">
-              <input name="companyPic" id="companyPic" type="file"
+              <input name="companyPicFile" id="companyPicFile" type="file"
+                     accept="image/jpeg,image/png"
                      class="dfinput px-4 py-2 border border-gray-300 rounded-md form-input-focus" />
               <div class="ml-4 text-sm text-gray-500">
-                <i class="fa fa-info-circle"></i> 请上传图片（支持JPG、PNG格式，不超过2MB）
+                <i class="fa fa-info-circle"></i> 支持 JPG/PNG，不超过2MB
               </div>
             </div>
+            <!-- 用于存放 MinIO 返回的下载 URL，提交到后端写到数据库 -->
+            <input type="hidden" name="companyPic" id="companyPic" />
+            <div id="picError" class="error-message" style="display:none;">请选择图片</div>
           </li>
 
           <!-- 提交按钮 -->
@@ -181,6 +188,7 @@
                    class="btn bg-primary hover:bg-primary/90 text-white font-medium px-6 py-2 rounded-md transition duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/50"
                    value="添加" />
           </li>
+
         </ul>
       </div>
     </form>
@@ -190,118 +198,127 @@
 <!-- 表单验证脚本 -->
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form[name="frm"]');
+    console.log('【脚本开始执行】');
 
-    // 初始化CKEditor
+    // —— 1. 安全初始化 CKEditor ——
     if (typeof CKEDITOR !== 'undefined') {
-      CKEDITOR.replace('companyBrief');
+      // 尝试销毁所有已存在的实例
+      Object.keys(CKEDITOR.instances).forEach(name => {
+        try {
+          CKEDITOR.instances[name].destroy(true);
+          console.log(`销毁已有 CKEditor 实例：${name}`);
+        } catch (err) {
+          console.warn(`销毁 CKEditor 实例 ${name} 时出错：`, err);
+        }
+      });
+
+      // 然后安全地重新初始化
+      try {
+        CKEDITOR.replace('companyBrief');
+        console.log('CKEditor 初始化成功');
+      } catch (err) {
+        console.error('CKEditor 初始化失败：', err);
+      }
+    } else {
+      console.warn('CKEDITOR 未定义，无法初始化富文本编辑器');
     }
 
-    form.addEventListener('submit', function(event) {
-      let isValid = true;
+    // —— 2. 表单提交拦截逻辑 ——
+    const form = document.getElementById('companyForm');
+    form.addEventListener('submit', async function(e) {
+      console.log('【submit 事件触发】');
+      e.preventDefault();
 
-      // 验证必填字段
-      const requiredFields = form.querySelectorAll('input[required], select[required]');
+      let isValid = true;
+      // 验证必填字段（现在真正有 required 属性了）
+      const requiredFields = form.querySelectorAll('input[required], select[required], textarea[required]');
       requiredFields.forEach(field => {
         if (!field.value.trim()) {
           isValid = false;
           field.classList.add('border-danger');
-
-          // 添加错误提示
-          if (!field.nextElementSibling || !field.nextElementSibling.classList.contains('error-message')) {
-            const errorMsg = document.createElement('div');
-            errorMsg.className = 'error-message';
-            errorMsg.textContent = '此字段为必填项';
-            field.parentNode.insertBefore(errorMsg, field.nextSibling);
+          if (!field.nextElementSibling?.classList.contains('error-message')) {
+            const msg = document.createElement('div');
+            msg.className = 'error-message';
+            msg.textContent = '此字段为必填项';
+            field.parentNode.insertBefore(msg, field.nextSibling);
           }
         } else {
           field.classList.remove('border-danger');
-
-          // 移除错误提示
-          const errorMsg = field.nextElementSibling;
-          if (errorMsg && errorMsg.classList.contains('error-message')) {
-            errorMsg.remove();
+          if (field.nextElementSibling?.classList.contains('error-message')) {
+            field.nextElementSibling.remove();
           }
         }
       });
 
-      // 验证企业简介（从CKEditor获取内容）
-      if (typeof CKEDITOR !== 'undefined') {
-        const editorData = CKEDITOR.instances.companyBrief.getData();
-        if (!editorData.trim()) {
-          isValid = false;
-          const editorElement = document.querySelector('.cke');
-          editorElement.classList.add('border', 'border-danger');
-
-          if (!editorElement.nextElementSibling || !editorElement.nextElementSibling.classList.contains('error-message')) {
-            const errorMsg = document.createElement('div');
-            errorMsg.className = 'error-message';
-            errorMsg.textContent = '企业简介不能为空';
-            editorElement.parentNode.insertBefore(errorMsg, editorElement.nextSibling);
-          }
-        } else {
-          const editorElement = document.querySelector('.cke');
-          editorElement.classList.remove('border', 'border-danger');
-
-          const errorMsg = editorElement.nextElementSibling;
-          if (errorMsg && errorMsg.classList.contains('error-message')) {
-            errorMsg.remove();
-          }
-        }
-      }
-
-      // 验证图片上传
-      const fileInput = document.getElementById('companyPic');
-      if (!fileInput.value) {
+      // 验证图片
+      const fileInput = document.getElementById('companyPicFile');
+      const picErr = document.getElementById('picError');
+      if (!fileInput.files.length) {
         isValid = false;
         fileInput.classList.add('border-danger');
-
-        if (!fileInput.nextElementSibling || !fileInput.nextElementSibling.classList.contains('error-message')) {
-          const errorMsg = document.createElement('div');
-          errorMsg.className = 'error-message';
-          errorMsg.textContent = '请选择企业宣传图片';
-          fileInput.parentNode.insertBefore(errorMsg, fileInput.nextSibling);
-        }
+        picErr.style.display = 'block';
       } else {
         fileInput.classList.remove('border-danger');
-
-        const errorMsg = fileInput.nextElementSibling;
-        if (errorMsg && errorMsg.classList.contains('error-message')) {
-          errorMsg.remove();
-        }
+        picErr.style.display = 'none';
       }
 
       if (!isValid) {
-        event.preventDefault();
+        console.log('表单校验未通过，终止提交');
+        return;
+      }
+
+      // 申请 presigned URL
+      let uploadUrl, downloadUrl;
+      try {
+        console.log('开始申请上传地址…');
+        const resp = await fetch('/uploadUrl', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileName: fileInput.files[0].name })
+        });
+        const js = await resp.json();
+        uploadUrl = js.uploadUrl;
+        downloadUrl = js.downloadUrl;
+        console.log('[上传前] uploadUrl=', uploadUrl);
+        console.log('[上传前] downloadUrl=', downloadUrl);
+      } catch (err) {
+        console.error('获取上传地址失败：', err);
+        return alert('获取上传地址失败：' + err.message);
+      }
+
+      // 上传文件
+      try {
+        console.log('开始 PUT 上传…');
+        const put = await fetch(uploadUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': fileInput.files[0].type },
+          body: fileInput.files[0]
+        });
+        console.log('[PUT 结果] status=', put.status);
+        if (!put.ok) throw new Error(put.statusText);
+      } catch (err) {
+        console.error('文件上传失败：', err);
+        return alert('文件上传失败：' + err.message);
+      }
+
+      // 填 hidden 并提交
+      document.getElementById('companyPic').value = downloadUrl;
+      console.log('[提交前] hidden.companyPic.value=', downloadUrl);
+      form.submit();
+    });
+
+    // 自动移除错误提示
+    form.addEventListener('focusin', function(e) {
+      const t = e.target;
+      if (t.matches('input, select, textarea')) {
+        t.classList.remove('border-danger');
+        const nxt = t.nextElementSibling;
+        if (nxt?.classList.contains('error-message')) nxt.remove();
       }
     });
-
-    // 为输入字段添加焦点事件，移除错误提示
-    const inputs = form.querySelectorAll('input, select');
-    inputs.forEach(input => {
-      input.addEventListener('focus', function() {
-        this.classList.remove('border-danger');
-
-        const errorMsg = this.nextElementSibling;
-        if (errorMsg && errorMsg.classList.contains('error-message')) {
-          errorMsg.remove();
-        }
-      });
-    });
-
-    // 如果有CKEditor，添加焦点事件处理
-    if (typeof CKEDITOR !== 'undefined') {
-      CKEDITOR.instances.companyBrief.on('focus', function() {
-        const editorElement = document.querySelector('.cke');
-        editorElement.classList.remove('border', 'border-danger');
-
-        const errorMsg = editorElement.nextElementSibling;
-        if (errorMsg && errorMsg.classList.contains('error-message')) {
-          errorMsg.remove();
-        }
-      });
-    }
   });
 </script>
+
+
 </body>
 </html>
