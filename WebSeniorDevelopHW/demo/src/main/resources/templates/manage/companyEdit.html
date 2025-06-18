@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>企业信息编辑</title>
+    <base th:href="@{/}">
+    <link th:href="@{/css/manageadmin.css}" rel="stylesheet" type="text/css" />
+    <script th:src="@{/js/jquery.js}"></script>
+    <script th:src="@{/ckeditor/ckeditor.js}"></script>
+    <script>
+        // 表单验证函数
+        function validate() {
+            if (!document.getElementById("companyName").value.trim()) {
+                alert("企业名称不能为空！");
+                document.getElementById("companyName").focus();
+                return false;
+            }
+            if (!document.getElementById("companyArea").value.trim()) {
+                alert("企业所在地不能为空！");
+                document.getElementById("companyArea").focus();
+                return false;
+            }
+            if (!document.getElementById("companySize").value.trim()) {
+                alert("企业规模不能为空！");
+                document.getElementById("companySize").focus();
+                return false;
+            }
+            if (!document.getElementById("companyType").value.trim()) {
+                alert("企业性质不能为空！");
+                document.getElementById("companyType").focus();
+                return false;
+            }
+            return true;
+        }
+
+        // 页面加载完成后初始化CKEditor
+        $(document).ready(function() {
+            if (CKEDITOR) {
+                CKEDITOR.replace('companyBrief');
+            }
+        });
+
+        $(function(){
+            // 记录最终要写到隐藏域的 URL，初始用旧图
+            let finalUrl = $('input[name=companyOldPic]').val();
+
+            // 监听 file 选中事件
+            $('#companyPic').on('change', function(){
+                const file = this.files[0];
+                if (!file) return;
+
+                // 1) 请求 presigned URL
+                $.ajax({
+                    url: '/uploadUrl',      // 你后端的 presign 接口
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ fileName: file.name }),
+                    success(resp) {
+                        // resp.uploadUrl, resp.downloadUrl
+                        // 2) 用 fetch PUT 到 MinIO
+                        fetch(resp.uploadUrl, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': file.type },
+                            body: file
+                        })
+                            .then(r => {
+                                if (!r.ok) throw new Error('上传失败，状态 ' + r.status);
+                                // 3) 上传成功，记录 downloadUrl
+                                finalUrl = resp.downloadUrl;
+                                // 更新隐藏域，为 form submit 做准备
+                                $('input[name=companyOldPic]').val(finalUrl);
+                                // 可选：更新页面预览
+                                $('img[th\\:src]').attr('src', finalUrl);
+                            })
+                            .catch(err => {
+                                alert('图片上传出错：' + err.message);
+                                // 清空 file input
+                                $('#companyPic').val('');
+                            });
+                    },
+                    error() {
+                        alert('获取上传地址失败，请稍后重试');
+                        $('#companyPic').val('');
+                    }
+                });
+            });
+
+            // 确保提交前隐藏域里总是最新 URL
+            $('form[name=frm]').on('submit', function(){
+                $('input[name=companyOldPic]').val(finalUrl);
+                return validate();
+            });
+        });
+    </script>
+</head>
+<body class="bg-f0f9fd font-sans">
+<div class="place">
+    <span>位置：</span>
+    <ul class="placeul">
+        <li><a href="#">首页</a></li>
+        <li><a href="#">企业信息编辑</a></li>
+    </ul>
+</div>
+<div class="formbody">
+    <div class="usual">
+        <form name="frm" th:action="@{/company/update}" method="post"
+              enctype="multipart/form-data" onsubmit="return validate();">
+            <div class="tabson">
+                <ul class="forminfo">
+                    <li>
+                        <label>企业名称<b class="text-danger">*</b></label>
+                        <input th:name="companyName" type="text"
+                               th:value="${company.companyName}" id="companyName"
+                               class="dfinput" style="width:518px;" />
+                    </li>
+                    <li>
+                        <label>企业所在地<b class="text-danger">*</b></label>
+                        <input th:name="companyArea" type="text"
+                               th:value="${company.companyArea}" id="companyArea"
+                               class="dfinput" style="width:518px;" />
+                    </li>
+                    <li>
+                        <label>企业规模<b class="text-danger">*</b></label>
+                        <input th:name="companySize" type="text"
+                               th:value="${company.companySize}" id="companySize"
+                               class="dfinput" style="width:518px;" />
+                    </li>
+                    <li>
+                        <label>企业性质<b class="text-danger">*</b></label>
+                        <input th:name="companyType" type="text"
+                               th:value="${company.companyType}" id="companyType"
+                               class="dfinput" style="width:518px;" />
+                    </li>
+                    <li>
+                        <p>企业简介&nbsp;(不超过1000字)</p>
+                        <textarea class="ckeditor" cols="50" id="companyBrief"
+                                  th:name="companyBrief" rows="10"
+                                  th:text="${company.companyBrief}"></textarea>
+                    </li>
+                    <li>
+                        <label>企业招聘状态</label>
+                        <div class="vocation">
+                            <select th:name="companyState" class="select3">
+                                <option value="1" th:selected="${company.companyState == 1}">
+                                    招聘中
+                                </option>
+                                <option value="2" th:selected="${company.companyState == 2}">
+                                    已暂停
+                                </option>
+                                <option value="3" th:selected="${company.companyState == 3}">
+                                    已结束
+                                </option>
+                            </select>
+                        </div>
+                    </li>
+                    <li>
+                        <label>显示排序</label>
+                        <input th:name="companySort" type="text"
+                               th:value="${company.companySort}" class="dfinput"
+                               style="width:100px;" />
+                    </li>
+                    <li>
+                        <label>宣传图片<b class="text-danger">*</b></label>
+                        <!-- 预览：Thymeleaf 渲染旧图 -->
+                        <img th:src="${company.companyPic}" height="100px" width="100px"/>
+                        <!-- 让用户选新文件 -->
+                        <input th:name="companyPic" id="companyPic" type="file" class="dfinput"
+                               style="width:300px; margin-right:5px;"/>
+                        <!-- 隐藏域：最终要写到 DTO 的 URL -->
+                        <input name="companyOldPic" th:value="${company.companyPic}" type="hidden"/>
+                    </li>
+                    <li>
+                        <input th:name="companyId" th:value="${company.companyId}"
+                               type="hidden" />
+                        <input name="type" value="update" type="hidden" />
+                        <input name="" type="submit" class="btn" value="保存修改" />
+                    </li>
+                </ul>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
