@@ -8,12 +8,14 @@ import com.flypiggyyoyoyo.demo.constants.ErrorEnum;
 import com.flypiggyyoyoyo.demo.constants.SuccessEnum;
 import com.flypiggyyoyoyo.demo.data.company.register.CompanyRegisterRequest;
 import com.flypiggyyoyoyo.demo.data.company.register.CompanyRegisterResponse;
+import com.flypiggyyoyoyo.demo.data.company.update.CompanyUpdateRequest;
 import com.flypiggyyoyoyo.demo.exception.CompanyException;
 import com.flypiggyyoyoyo.demo.exception.DatabaseException;
 import com.flypiggyyoyoyo.demo.model.TbCompany;
 import com.flypiggyyoyoyo.demo.service.TbCompanyService;
 import com.flypiggyyoyoyo.demo.mapper.TbCompanyMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -130,6 +132,51 @@ public class TbCompanyServiceImpl extends ServiceImpl<TbCompanyMapper, TbCompany
         System.out.println("当前页记录数: " + result.getRecords().size());
 
         return result;
+    }
+
+    @Override
+    public void updateCompany(CompanyUpdateRequest req) {
+        // 1. 验证企业是否存在
+        Long id = req.getCompanyId();
+        TbCompany exist = this.getById(id);
+        if (exist == null) {
+            throw new CompanyException("企业不存在，ID=" + id);
+        }
+
+        // 2. 覆盖可更新字段（非空才覆盖）
+        if (StringUtils.hasText(req.getCompanyName())) {
+            exist.setCompanyName(req.getCompanyName());
+        }
+        if (StringUtils.hasText(req.getCompanyArea())) {
+            exist.setCompanyArea(req.getCompanyArea());
+        }
+        if (StringUtils.hasText(req.getCompanySize())) {
+            exist.setCompanySize(COMPANY_SIZE_MAP.getOrDefault(
+                    req.getCompanySize(), req.getCompanySize()));
+        }
+        if (StringUtils.hasText(req.getCompanyType())) {
+            exist.setCompanyType(COMPANY_TYPE_MAP.getOrDefault(
+                    req.getCompanyType(), req.getCompanyType()));
+        }
+        if (StringUtils.hasText(req.getCompanyBrief())) {
+            exist.setCompanyBrief(req.getCompanyBrief());
+        }
+        if (req.getCompanyState() != null) {
+            exist.setCompanyState(req.getCompanyState());
+        }
+        if (req.getCompanySort() != null) {
+            exist.setCompanySort(req.getCompanySort());
+        }
+        // 图片 URL 覆盖
+        if (StringUtils.hasText(req.getCompanyPic())) {
+            exist.setCompanyPic(req.getCompanyPic());
+        }
+
+        // 3. 执行更新
+        boolean ok = this.updateById(exist);
+        if (!ok) {
+            throw new DatabaseException("数据库异常，更新企业信息失败");
+        }
     }
 
     private boolean isRegister(String companyName) {

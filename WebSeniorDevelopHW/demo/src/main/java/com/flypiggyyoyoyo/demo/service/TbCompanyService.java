@@ -3,6 +3,7 @@ package com.flypiggyyoyoyo.demo.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.flypiggyyoyoyo.demo.data.company.register.CompanyRegisterRequest;
 import com.flypiggyyoyoyo.demo.data.company.register.CompanyRegisterResponse;
+import com.flypiggyyoyoyo.demo.data.company.update.CompanyUpdateRequest;
 import com.flypiggyyoyoyo.demo.model.TbCompany;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -23,4 +24,6 @@ public interface TbCompanyService extends IService<TbCompany> {
      * @return 分页结果
      */
     IPage<TbCompany> getCompanyPage(int pageNum, int pageSize, String name, String size);
+
+    void updateCompany(CompanyUpdateRequest req);
 }
