@@ -17,7 +17,7 @@ public class TbUsers {
     /**
      * 
      */
-    @TableId(type = IdType.AUTO)
+    @TableId(value = "user_id", type = IdType.AUTO)
     private Integer userId;
 
     /**

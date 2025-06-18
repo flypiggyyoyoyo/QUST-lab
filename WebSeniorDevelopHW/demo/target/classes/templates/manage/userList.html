@@ -27,19 +27,23 @@
       <li><span><img th:src="@{/images/t03.png}" /></span><a href="userDelete.html" target="rightFrame">删除</a></li>
     </ul>
 
-    <!-- 用户身份筛选下拉框 -->
-    <div class="search-container">
-      <select class="filter-select" id="roleFilter">
+    <form th:action="@{/user/lists}" method="get" class="search-container">
+      <select class="filter-select" name="role"
+              th:value="${currentRole}">
         <option value="">所有角色</option>
         <option value="admin">系统管理员</option>
         <option value="hr">人力资源</option>
         <option value="user">普通用户</option>
       </select>
 
-      <!-- 用户查询输入框 -->
-      <input type="text" class="search-input" id="userSearch" placeholder="请输入用户名">
-      <button class="search-btn" id="searchBtn">搜索</button>
-    </div>
+      <input type="text"
+             class="search-input"
+             name="keyword"
+             placeholder="请输入用户名"
+             th:value="${currentKeyword}" />
+
+      <button type="submit" class="search-btn">搜索</button>
+    </form>
   </div>
 
   <table class="imgtable">
@@ -55,45 +59,71 @@
     </tr>
     </thead>
     <tbody>
-    <tr height="50px">
-      <td><input name="" type="checkbox" value="" /></td>
-      <td>QST</td>
-      <td>青软实训</td>
-      <td>qst@test.com</td>
-      <td>系统管理员</td>
-      <td>启用</td>
-      <td><a href="userAdd.html" class="tablelink">修改</a> &nbsp;&nbsp;<a href="#" class="tablelink"> 删除</a></td>
+    <tr th:each="user : ${users}" height="50px">
+      <td>
+        <input type="checkbox"
+               th:value="${user.userId}"
+               name="userIds" />
+      </td>
+      <td th:text="${user.userLogname}">登录名</td>
+      <td th:text="${user.userRealname}">真实姓名</td>
+      <td th:text="${user.userEmail}">Email</td>
+      <td th:switch="${user.userRole}">
+        <span th:case="'admin'">系统管理员</span>
+        <span th:case="'hr'">人力资源</span>
+        <span th:case="'user'">普通用户</span>
+        <span th:case="*">未知</span>
+      </td>
+      <td th:text="${user.userState == 1} ? '启用' : '禁用'">状态</td>
+      <td>
+        <a th:href="@{/users/edit(id=${user.userId})}" class="tablelink">修改</a>
+        &nbsp;&nbsp;
+        <a href="#" class="tablelink"
+           th:onclick="'return confirmDelete(' + ${user.userId} + ');'">
+          删除
+        </a>
+      </td>
     </tr>
-    <tr height="50px">
-      <td><input name="" type="checkbox" value="" /></td>
-      <td>QST</td>
-      <td>青软实训</td>
-      <td>qst@test.com</td>
-      <td>人力资源</td>
-      <td>启用</td>
-      <td><a href="userAdd.html" class="tablelink">修改</a> &nbsp;&nbsp;<a href="#" class="tablelink"> 删除</a></td>
-    </tr>
-    <tr height="50px">
-      <td><input name="" type="checkbox" value="" /></td>
-      <td>QST</td>
-      <td>青软实训</td>
-      <td>qst@test.com</td>
-      <td>普通用户</td>
-      <td>启用</td>
-      <td><a href="userAdd.html" class="tablelink">修改</a> &nbsp;&nbsp;<a href="#" class="tablelink"> 删除</a></td>
+    <tr th:if="${#lists.isEmpty(users)}">
+      <td colspan="7" style="text-align: center; color: #999;">
+        暂无用户
+      </td>
     </tr>
     </tbody>
+
+
   </table>
 
   <div class="pagin">
-    <div class="message">共<i class="blue">1256</i>页，当前显示第&nbsp;<i class="blue">2&nbsp;</i>页</div>
+    <div class="message">
+      共 <i class="blue" th:text="${userPage.pages}"></i> 页，
+      当前第 <i class="blue" th:text="${userPage.current}"></i> 页，
+      总记录数 <i class="blue" th:text="${userPage.total}"></i> 条
+    </div>
     <ul class="paginList">
-      <li class="paginItem"><a href="javascript:;">首页</a></li>
-      <li class="paginItem"><a href="javascript:;">上一页<span class="pagepre"></span></a></li>
-      <li class="paginItem"><a href="javascript:;">下一页<span class="pagenxt"></span></a></li>
-      <li class="paginItem"><a href="javascript:;">尾页</a></li>
+      <!-- 跳转首页 -->
+      <li class="paginItem">
+        <a th:href="@{/user/lists(pageNum=1, pageSize=${userPage.size}, role=${currentRole}, keyword=${currentKeyword})}">首页</a>
+      </li>
+      <!-- 上一页 -->
+      <li class="paginItem" th:if="${userPage.hasPrevious()}">
+        <a th:href="@{/user/lists(pageNum=${userPage.current-1}, pageSize=${userPage.size}, role=${currentRole}, keyword=${currentKeyword})}">
+          上一页
+        </a>
+      </li>
+      <!-- 下一页 -->
+      <li class="paginItem" th:if="${userPage.hasNext()}">
+        <a th:href="@{/user/lists(pageNum=${userPage.current+1}, pageSize=${userPage.size}, role=${currentRole}, keyword=${currentKeyword})}">
+          下一页
+        </a>
+      </li>
+      <!-- 跳转尾页 -->
+      <li class="paginItem">
+        <a th:href="@{/user/lists(pageNum=${userPage.pages}, pageSize=${userPage.size}, role=${currentRole}, keyword=${currentKeyword})}">尾页</a>
+      </li>
     </ul>
   </div>
+
 </div>
 
 <script>

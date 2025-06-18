@@ -25,7 +25,7 @@ public class FrameController {
 
     // 左菜单栏/用户管理
     @GetMapping("/userList.html")
-    public String userListFrame() {return "manage/userList";}
+    public String userListFrame() {return "redirect:/user/lists";}
 
     // 用户添加
     @GetMapping("/userAdd.html")
@@ -33,7 +33,7 @@ public class FrameController {
 
     // 企业管理
     @GetMapping("/companyList.html")
-    public String companyListFrame() {return "manage/companyList";}
+    public String companyListFrame() {return "redirect:/company/list";}
 
     // 企业添加
     @GetMapping("/company/add")

@@ -1,24 +1,24 @@
 package com.flypiggyyoyoyo.demo.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.flypiggyyoyoyo.demo.data.user.login.UserLoginRequest;
 import com.flypiggyyoyoyo.demo.data.user.login.UserLoginResponse;
 import com.flypiggyyoyoyo.demo.data.user.register.UserRegisterRequest;
 import com.flypiggyyoyoyo.demo.exception.UserException;
+import com.flypiggyyoyoyo.demo.model.TbUsers;
 import com.flypiggyyoyoyo.demo.service.TbUsersService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -98,6 +98,29 @@ public class UserController {
                                  Model model) {
         userService.register(request);
         // System.out.println("注册完成");
+        //return "manage/userList";
+        return "redirect:/user/lists";
+    }
+
+    @GetMapping("/user/lists")
+    public String listUsers(
+            Model model,
+            @RequestParam(defaultValue = "1") long pageNum,
+            @RequestParam(defaultValue = "10") long pageSize,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String keyword) {
+
+        Page<TbUsers> page = new Page<>(pageNum, pageSize);
+        Page<TbUsers> userPage = userService.findByRoleAndKeyword(page, role, keyword);
+
+        // ① 把分页对象放进去（你已经有的）
+        model.addAttribute("userPage", userPage);
+        // ② 再把真正的列表放进去，供 th:each 使用
+        model.addAttribute("users", userPage.getRecords());
+
+        model.addAttribute("currentRole", role);
+        model.addAttribute("currentKeyword", keyword);
         return "manage/userList";
     }
+
 }

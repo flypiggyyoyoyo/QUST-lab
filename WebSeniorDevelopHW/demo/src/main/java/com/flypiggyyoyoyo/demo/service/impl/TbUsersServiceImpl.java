@@ -2,6 +2,7 @@ package com.flypiggyyoyoyo.demo.service.impl;
 
 import cn.hutool.core.lang.Snowflake;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.flypiggyyoyoyo.demo.constants.ErrorEnum;
 import com.flypiggyyoyoyo.demo.constants.SuccessEnum;
@@ -16,6 +17,7 @@ import com.flypiggyyoyoyo.demo.service.TbUsersService;
 import com.flypiggyyoyoyo.demo.mapper.TbUsersMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
+import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -108,6 +110,32 @@ public class TbUsersServiceImpl extends ServiceImpl<TbUsersMapper, TbUsers>
 
         return response;
     }
+
+    @Override
+    public Page<TbUsers> findByRoleAndKeyword(Page<TbUsers> page, String role, String keyword) {
+        QueryWrapper<TbUsers> wrapper = new QueryWrapper<>();
+
+        // 角色过滤
+        if (StringUtils.hasText(role)) {
+            wrapper.eq("user_role", role);  // 如果传入了 role，就加上这个过滤条件
+        }
+
+        // 关键字过滤：login_name 或 real_name 模糊匹配
+        if (StringUtils.hasText(keyword)) {
+            wrapper.and(w -> w
+                    .like("user_logname", keyword)  // 使用 user_logname 作为字段
+                    .or()
+                    .like("user_realname", keyword) // 使用 user_realname 作为字段
+            );
+        }
+
+        // 排序字段
+        wrapper.orderByDesc("user_id"); // 指定用 user_id 排序
+
+        // 调用 MyBatis-Plus 内置分页查询
+        return this.page(page, wrapper);
+    }
+
 
     private boolean isRegister (String email){
         QueryWrapper<TbUsers> queryWrapper = new QueryWrapper<>();
