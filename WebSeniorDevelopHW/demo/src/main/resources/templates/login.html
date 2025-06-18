@@ -152,13 +152,12 @@
 			return false; // 阻止表单默认提交
 		}
 
-		// AJAX提交表单
+		// AJAX提交表单（修改后的版本）
 		function submitForm() {
 			var form = document.getElementById('loginForm');
 			var formData = new FormData(form);
-
-			// 显示加载状态
 			var loginButton = document.querySelector('.login_button');
+
 			loginButton.disabled = true;
 			loginButton.value = '登录中...';
 
@@ -166,37 +165,26 @@
 				method: 'POST',
 				body: formData
 			})
-					.then(response => response.text())
+					.then(response => {
+						if (!response.ok) {
+							throw new Error(`HTTP错误！状态码: ${response.status}`);
+						}
+						return response.json();
+					})
 					.then(data => {
-						// 重置按钮状态
 						loginButton.disabled = false;
 						loginButton.value = '登 录';
 
-						// 检查响应是否包含错误信息
-						if (data.includes('errorMsg')) {
-							// 从响应中提取错误信息
-							var errorMsg = "登录失败，请检查账号/密码/验证码";
-							var regex = /errorMsg='([^']+)'/;
-							var match = data.match(regex);
-
-							if (match && match[1]) {
-								errorMsg = match[1];
-							}
-
-							// 显示错误弹窗
-							showErrorModal(errorMsg);
+						if (data.code !== 200) {
+							showErrorModal(data.msg || "登录失败，请检查账号/密码/验证码");
 						} else {
-							// 登录成功，重定向到主页
 							window.location.href = '/manage/main';
 						}
 					})
 					.catch(error => {
-						// 重置按钮状态
 						loginButton.disabled = false;
 						loginButton.value = '登 录';
-
-						// 显示网络错误
-						showErrorModal('网络请求出错，请稍后重试');
+						showErrorModal(error.message || '网络请求出错，请稍后重试');
 						console.error('登录请求错误:', error);
 					});
 		}
@@ -208,18 +196,13 @@
 
 			modalMessage.textContent = message;
 			modal.style.display = 'block';
-
-			// 刷新验证码
 			refreshCaptcha();
 		}
 
-		// 关闭弹窗并刷新页面
+		// 关闭弹窗
 		function closeModal() {
 			var modal = document.getElementById('errorModal');
 			modal.style.display = 'none';
-
-			// 刷新页面
-			window.location.reload();
 		}
 
 		// 点击弹窗外部关闭
@@ -227,7 +210,6 @@
 			var modal = document.getElementById('errorModal');
 			if (event.target == modal) {
 				modal.style.display = 'none';
-				window.location.reload();
 			}
 		}
 	</script>

@@ -13,10 +13,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Controller
@@ -33,34 +36,43 @@ public class UserController {
     private TbUsersService userService;
 
     @PostMapping("/login")
-    public String login(UserLoginRequest request, Model model, HttpSession session, HttpServletRequest servletRequest) {
+    @ResponseBody // 关键：添加此注解返回JSON而非视图
+    public Map<String, Object> login(UserLoginRequest request,
+                                     HttpSession session,
+                                     HttpServletRequest servletRequest) {
+        Map<String, Object> result = new HashMap<>();
+
         try {
-            // 调用服务层进行登录验证（传递HttpServletRequest参数）
+            // 调用服务层进行登录验证
             UserLoginResponse response = userService.login(request, servletRequest);
 
             log.info("验证成功，用户: {}", response.getUserName());
 
             // 验证通过，将用户信息存入session
-            session.setAttribute("loginUser", response.getUserId()); // 存储用户ID
-            session.setAttribute("userName", response.getUserName()); // 存储用户名
-            session.setAttribute("userRole", response.getRole()); // 存储用户角色
+            session.setAttribute("loginUser", response.getUserId());
+            session.setAttribute("userName", response.getUserName());
+            session.setAttribute("userRole", response.getRole());
 
-            // 设置Session超时时间（30分钟）
+            // 设置Session超时时间
             session.setMaxInactiveInterval(30 * 60);
 
-            return "redirect:/manage/main"; // 登录成功，重定向到主页
+            // 登录成功
+            result.put("code", 200);
+            result.put("msg", "登录成功");
+            result.put("data", response);
         } catch (UserException e) {
-            // 业务异常，记录错误信息但不记录堆栈
+            // 业务异常
             log.warn("登录失败：{}", e.getMessage());
-            model.addAttribute("errorMsg", e.getMessage());
-            return "login";
+            result.put("code", 400);
+            result.put("msg", e.getMessage());
         } catch (Exception e) {
-            // 系统异常，记录完整堆栈信息
+            // 系统异常
             log.error("登录系统异常：", e);
-            model.addAttribute("errorMsg", "登录异常，请稍后重试");
-            // 可以添加额外的错误处理逻辑，如告警等
-            return "login";
+            result.put("code", 500);
+            result.put("msg", "登录异常，请稍后重试");
         }
+
+        return result;
     }
 
     // 退出接口：重定向到/demo/login
