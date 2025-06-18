@@ -34,6 +34,12 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>8.2.1</version>
+        </dependency>
+
         <!-- 雪花算法 -->
         <dependency>
             <groupId>cn.hutool</groupId>
