@@ -9,6 +9,7 @@ import lombok.experimental.Accessors;
 public class UserLoginResponse {
     private int code;             // 状态码（使用枚举类中的 code）
 
+    private String userRealName;
     private int userId;        // 用户ID
     private String userName;      // 用户名
     private String userEmail;     // 用户邮箱

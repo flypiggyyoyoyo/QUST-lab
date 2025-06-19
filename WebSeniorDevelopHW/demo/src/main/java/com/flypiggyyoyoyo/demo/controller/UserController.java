@@ -1,13 +1,11 @@
 package com.flypiggyyoyoyo.demo.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.flypiggyyoyoyo.demo.data.company.update.CompanyUpdateRequest;
 import com.flypiggyyoyoyo.demo.data.user.login.UserLoginRequest;
 import com.flypiggyyoyoyo.demo.data.user.login.UserLoginResponse;
 import com.flypiggyyoyoyo.demo.data.user.register.UserRegisterRequest;
 import com.flypiggyyoyoyo.demo.data.user.update.UserUpdateRequest;
 import com.flypiggyyoyoyo.demo.exception.UserException;
-import com.flypiggyyoyoyo.demo.model.TbCompany;
 import com.flypiggyyoyoyo.demo.model.TbUsers;
 import com.flypiggyyoyoyo.demo.service.TbUsersService;
 import lombok.extern.slf4j.Slf4j;
@@ -51,10 +49,19 @@ public class UserController {
 
             log.info("验证成功，用户: {}", response.getUserName());
 
-            // 验证通过，将用户信息存入session
-            session.setAttribute("user", response.getUserId());
+            // 先写用户名、角色
             session.setAttribute("userName", response.getUserName());
             session.setAttribute("userRole", response.getRole());
+            session.setAttribute("userRealname", response.getUserRealName());
+            // 最后写 user，触发 Listener
+            session.setAttribute("user", response.getUserId());
+
+
+            System.out.printf("[LoginController] sessionId=%s, user=%s, userName=%s, userRole=%s%n",
+                    session.getId(),
+                    session.getAttribute("user"),
+                    session.getAttribute("userName"),
+                    session.getAttribute("userRole"));
 
             // 设置Session超时时间
             session.setMaxInactiveInterval(30 * 60);

@@ -1,9 +1,9 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="utf-8">
-<title>在线用户列表</title>
-<link href="../../static/css/manageadmin.css" rel="stylesheet" type="text/css" />
+  <meta charset="utf-8">
+  <title>在线用户列表</title>
+  <link th:href="@{/css/manageadmin.css}" rel="stylesheet" type="text/css" />
 </head>
 <body>
 <div class="place"> <span>位置：</span>
@@ -15,32 +15,35 @@
 <div class="rightinfo">
   <table class="imgtable">
     <thead>
-      <tr>
-        <th>用户登录名</th>
-        <th>用户真实姓名</th>
-        <th>用户角色</th>
-        <th>操作</th>
-      </tr>
+    <tr>
+      <th>用户登录名</th>
+      <th>用户真实姓名</th>
+      <th>用户角色</th>
+      <th>操作</th>
+    </tr>
     </thead>
     <tbody>
-      <tr height="50px">
-        <td>admin</td>
-        <td>青软实训</td>
-        <td>系统管理员</td>
-        <td ><a href="#" class="tablelink">强制下线</a> </td>
-      </tr>
-      <tr height="50px">
-        <td>admin</td>
-        <td>青软实训</td>
-        <td>系统管理员</td>
-        <td ><a href="#" class="tablelink">强制下线</a> </td>
-      </tr>
-      <tr height="50px">
-        <td>admin</td>
-        <td>青软实训</td>
-        <td>系统管理员</td>
-        <td ><a href="#" class="tablelink">强制下线</a> </td>
-      </tr>
+    <!-- 使用Thymeleaf循环展示在线用户 -->
+    <tr th:each="user : ${onlineUsers}" height="50px">
+      <td th:text="${user.userLogname}">登录名</td>
+      <td th:text="${user.userRealname}">真实姓名</td>
+      <td th:switch="${user.userRole}">
+        <span th:case="'1'">普通用户</span>
+        <span th:case="'2'">企业管理员</span>
+        <span th:case="'3'">系统管理员</span>
+        <span th:case="*">未知</span>
+      </td>
+      <td>
+        <!-- 使用Thymeleaf构建强制下线链接 -->
+        <a th:href="@{/user/offline(userId=${user.userId})}" class="tablelink">强制下线</a>
+      </td>
+    </tr>
+    <!-- 无在线用户时显示 -->
+    <tr th:if="${#lists.isEmpty(onlineUsers)}">
+      <td colspan="4" style="text-align: center; color: #999;">
+        暂无在线用户
+      </td>
+    </tr>
     </tbody>
   </table>
 </div>

@@ -72,7 +72,8 @@ public class TbUsersServiceImpl extends ServiceImpl<TbUsersMapper, TbUsers>
         response.setUserName(request.getUserName())
                 .setUserId(user.getUserId())
                 .setRole(user.getUserRole())
-                .setCode(SuccessEnum.LOGIN_SUCCESS.getCode());
+                .setCode(SuccessEnum.LOGIN_SUCCESS.getCode())
+                .setUserRealName(user.getUserRealname());
 
         return response;
     }
