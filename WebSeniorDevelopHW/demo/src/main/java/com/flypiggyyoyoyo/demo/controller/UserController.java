@@ -52,7 +52,7 @@ public class UserController {
             log.info("验证成功，用户: {}", response.getUserName());
 
             // 验证通过，将用户信息存入session
-            session.setAttribute("loginUser", response.getUserId());
+            session.setAttribute("user", response.getUserId());
             session.setAttribute("userName", response.getUserName());
             session.setAttribute("userRole", response.getRole());
 
@@ -116,9 +116,7 @@ public class UserController {
         Page<TbUsers> page = new Page<>(pageNum, pageSize);
         Page<TbUsers> userPage = userService.findByRoleAndKeyword(page, role, keyword);
 
-        // ① 把分页对象放进去（你已经有的）
         model.addAttribute("userPage", userPage);
-        // ② 再把真正的列表放进去，供 th:each 使用
         model.addAttribute("users", userPage.getRecords());
 
         model.addAttribute("currentRole", role);

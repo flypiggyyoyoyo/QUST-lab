@@ -163,7 +163,8 @@
 
 			fetch('/login', {
 				method: 'POST',
-				body: formData
+				body: formData,
+				credentials: 'same-origin'
 			})
 					.then(response => {
 						if (!response.ok) {
