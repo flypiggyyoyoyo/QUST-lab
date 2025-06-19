@@ -10,11 +10,13 @@ import com.flypiggyyoyoyo.demo.data.user.login.UserLoginRequest;
 import com.flypiggyyoyoyo.demo.data.user.login.UserLoginResponse;
 import com.flypiggyyoyoyo.demo.data.user.register.UserRegisterRequest;
 import com.flypiggyyoyoyo.demo.data.user.register.UserRegisterResponse;
+import com.flypiggyyoyoyo.demo.data.user.update.UserUpdateRequest;
 import com.flypiggyyoyoyo.demo.exception.DatabaseException;
 import com.flypiggyyoyoyo.demo.exception.UserException;
 import com.flypiggyyoyoyo.demo.model.TbUsers;
 import com.flypiggyyoyoyo.demo.service.TbUsersService;
 import com.flypiggyyoyoyo.demo.mapper.TbUsersMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
@@ -29,6 +31,9 @@ import javax.servlet.http.HttpServletRequest;
 @Service
 public class TbUsersServiceImpl extends ServiceImpl<TbUsersMapper, TbUsers>
     implements TbUsersService{
+
+    @Autowired
+    private TbUsersMapper tbUsersMapper;
 
     @Override
     public UserLoginResponse login(UserLoginRequest request, HttpServletRequest servletRequest) {
@@ -134,6 +139,38 @@ public class TbUsersServiceImpl extends ServiceImpl<TbUsersMapper, TbUsers>
 
         // 调用 MyBatis-Plus 内置分页查询
         return this.page(page, wrapper);
+    }
+
+    @Override
+    public void updateUser(UserUpdateRequest req) {
+        // 检查userId是否存在
+        if (req.getUserId() == 0) {
+            throw new UserException("用户ID不能为空！");
+        }
+
+        // 使用userId查询用户
+        TbUsers user = tbUsersMapper.selectById(req.getUserId());
+
+        if (user != null) {
+            // 更新用户信息
+            user.setUserRealname(req.getRealName());
+            user.setUserEmail(req.getEmail());
+            user.setUserRole(req.getRole());
+            user.setUserState(req.getState());
+
+            // 如果修改了登录名，也需要更新
+            if (req.getLogName() != null && !req.getLogName().equals(user.getUserLogname())) {
+                user.setUserLogname(req.getLogName());
+            }
+
+            // 执行更新操作
+            int updateCount = tbUsersMapper.updateById(user);
+            if (updateCount == 0) {
+                throw new UserException("用户更新失败，请稍后再试！");
+            }
+        } else {
+            throw new UserException("用户未找到，无法更新！");
+        }
     }
 
 

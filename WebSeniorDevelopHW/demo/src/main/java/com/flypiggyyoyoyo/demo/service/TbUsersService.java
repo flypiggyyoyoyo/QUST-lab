@@ -2,10 +2,12 @@ package com.flypiggyyoyoyo.demo.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.flypiggyyoyoyo.demo.data.company.update.CompanyUpdateRequest;
 import com.flypiggyyoyoyo.demo.data.user.login.UserLoginRequest;
 import com.flypiggyyoyoyo.demo.data.user.login.UserLoginResponse;
 import com.flypiggyyoyoyo.demo.data.user.register.UserRegisterRequest;
 import com.flypiggyyoyoyo.demo.data.user.register.UserRegisterResponse;
+import com.flypiggyyoyoyo.demo.data.user.update.UserUpdateRequest;
 import com.flypiggyyoyoyo.demo.model.TbUsers;
 import com.baomidou.mybatisplus.extension.service.IService;
 import javax.servlet.http.HttpServletRequest;
@@ -38,4 +40,6 @@ public interface TbUsersService extends IService<TbUsers> {
      * @return         分页后的用户列表
      */
     Page<TbUsers> findByRoleAndKeyword(Page<TbUsers> page, String role, String keyword);
+
+    void updateUser(UserUpdateRequest req);
 }

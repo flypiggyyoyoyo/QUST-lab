@@ -76,13 +76,14 @@
       </td>
       <td th:text="${user.userState == 1} ? '启用' : '禁用'">状态</td>
       <td>
-        <a th:href="@{/users/edit(id=${user.userId})}" class="tablelink">修改</a>
+        <a th:href="@{/user/edit(userId=${user.userId})}" class="tablelink">修改</a>
         &nbsp;&nbsp;
         <a href="#" class="tablelink"
            th:onclick="'return confirmDelete(' + ${user.userId} + ');'">
           删除
         </a>
       </td>
+
     </tr>
     <tr th:if="${#lists.isEmpty(users)}">
       <td colspan="7" style="text-align: center; color: #999;">

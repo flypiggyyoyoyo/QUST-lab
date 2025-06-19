@@ -1,10 +1,13 @@
 package com.flypiggyyoyoyo.demo.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.flypiggyyoyoyo.demo.data.company.update.CompanyUpdateRequest;
 import com.flypiggyyoyoyo.demo.data.user.login.UserLoginRequest;
 import com.flypiggyyoyoyo.demo.data.user.login.UserLoginResponse;
 import com.flypiggyyoyoyo.demo.data.user.register.UserRegisterRequest;
+import com.flypiggyyoyoyo.demo.data.user.update.UserUpdateRequest;
 import com.flypiggyyoyoyo.demo.exception.UserException;
+import com.flypiggyyoyoyo.demo.model.TbCompany;
 import com.flypiggyyoyoyo.demo.model.TbUsers;
 import com.flypiggyyoyoyo.demo.service.TbUsersService;
 import lombok.extern.slf4j.Slf4j;
@@ -123,4 +126,20 @@ public class UserController {
         return "manage/userList";
     }
 
+    @GetMapping("/user/edit")
+    public String edit(@RequestParam Long userId, Model model) {
+        TbUsers user = userService.getById(userId);
+        if (user == null) {
+            model.addAttribute("errorMsg", "用户不存在");
+            return "error/404";
+        }
+        model.addAttribute("user", user);
+        return "manage/userEdit"; // 返回编辑页面视图名称
+    }
+
+    @PostMapping("/user/update")
+    public String updateUser(@ModelAttribute UserUpdateRequest req) {
+        userService.updateUser(req);
+        return "redirect:/user/lists";
+    }
 }
