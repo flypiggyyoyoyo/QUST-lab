@@ -28,7 +28,7 @@ public class FrameController {
     public String userListFrame() {return "redirect:/user/lists";}
 
     // 用户添加
-    @GetMapping("/userAdd.html")
+    @GetMapping("/user/add")
     public String userAddFrame() {return "manage/userAdd";}
 
     // 企业管理
