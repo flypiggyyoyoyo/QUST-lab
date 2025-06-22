@@ -15,6 +15,11 @@ import org.springframework.stereotype.Service;
 public class TbApplicantServiceImpl extends ServiceImpl<TbApplicantMapper, TbApplicant>
     implements TbApplicantService{
 
+    @Override
+    public boolean existsById(Integer id) {
+        return getById(id) != null;
+    }
+
 }
 
 

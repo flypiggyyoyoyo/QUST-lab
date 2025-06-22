@@ -1,74 +1,153 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="utf-8">
-<title>简历列表</title>
-<link href="../../static/css/manageadmin.css" rel="stylesheet" type="text/css" />
+  <meta charset="utf-8" />
+  <title>简历列表</title>
+  <link th:href="@{/css/manageadmin.css}" rel="stylesheet" type="text/css" />
+  <style>
+    .search-container { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; }
+    .filter-select { padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; }
+    .search-input { padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; width: 200px; }
+    .search-btn { padding: 6px 15px; background-color: #4285f4; color: white; border: none; border-radius: 4px; cursor: pointer; }
+  </style>
+  <script th:src="@{/js/jquery.js}"></script>
 </head>
-<body>
-<div class="place"> <span>位置：</span>
+<body class="bg-f0f9fd font-sans">
+<div class="place">
+  <span>位置：</span>
   <ul class="placeul">
-    <li><a href="../index.html">首页</a></li>
+    <li><a th:href="@{/index}">首页</a></li>
     <li>简历列表</li>
   </ul>
 </div>
+
 <div class="rightinfo">
   <div class="tools">
     <ul class="toolbar">
-      <li><span><img src="../../static/images/t03.png" /></span><a href="#">删除</a></li>
+      <li class="click">
+        <span><img th:src="@{/images/t01.png}" /></span>
+        <a th:href="@{/resume/add}" class="tablelink">添加</a>
+      </li>
+      <li>
+        <span><img th:src="@{/images/t03.png}" /></span>
+        <a href="#" class="tablelink" th:onclick="'return confirmDelete();'">删除</a>
+      </li>
     </ul>
+
+    <form th:action="@{/resume/lists}" method="get" class="search-container">
+      <select class="filter-select" name="experience" th:value="${currentExperience}">
+        <option value="">所有经验</option>
+        <option value="fresh">应届毕业生</option>
+        <option value="1-3">1-3年</option>
+        <option value="3-5">3-5年</option>
+        <option value=">5">5年以上</option>
+      </select>
+
+      <input type="text"
+             class="search-input"
+             name="keyword"
+             placeholder="请输入姓名或意向职位"
+             th:value="${currentKeyword}" />
+
+      <button type="submit" class="search-btn">搜索</button>
+    </form>
   </div>
+
   <table class="imgtable">
     <thead>
-      <tr>
-        <th ><input name="" type="checkbox" value="" checked="checked"/></th>
-        <th>姓名</th>
-        <th>手机</th>
-        <th>Email</th>
-        <th>工作经验</th>
-        <th>求职意向</th>
-        <th>操作</th>
-      </tr>
+    <tr>
+      <th><input type="checkbox" th:onclick="selectAll(this)" /></th>
+      <th>姓名</th>
+      <th>手机</th>
+      <th>Email</th>
+      <th>工作经验</th>
+      <th>求职意向</th>
+      <th>操作</th>
+    </tr>
     </thead>
     <tbody>
-      <tr height="50px">
-        <td ><input name="" type="checkbox" value="" /></td>
-        <td>张三</td>
-        <td>13515555555</td>
-        <td>zhangs@test.com</td>
-        <td>应届毕业生</td>
-        <td>java软件开发</td>
-        <td ><a href="resumeView.html" class="tablelink">查看</a> &nbsp;&nbsp;<a href="#" class="tablelink"> 删除</a></td>
-      </tr>
-      <tr height="50px">
-        <td ><input name="" type="checkbox" value="" /></td>
-        <td>张三</td>
-        <td>13515555555</td>
-        <td>zhangs@test.com</td>
-        <td>应届毕业生</td>
-        <td>java软件开发</td>
-        <td ><a href="resumeView.html" class="tablelink">查看</a> &nbsp;&nbsp;<a href="#" class="tablelink"> 删除</a></td>
-      </tr>
-      <tr height="50px">
-        <td ><input name="" type="checkbox" value="" /></td>
-        <td>张三</td>
-        <td>13515555555</td>
-        <td>zhangs@test.com</td>
-        <td>应届毕业生</td>
-        <td>java软件开发</td>
-        <td ><a href="resumeView.html" class="tablelink">查看</a> &nbsp;&nbsp;<a href="#" class="tablelink"> 删除</a></td>
-      </tr>
+    <!-- use MyBatis-Plus page.records, not .list -->
+    <tr th:each="res : ${resumePage.records}" height="50px">
+      <!-- use 实体主键 basicinfoId -->
+      <td><input type="checkbox" name="resumeIds" th:value="${res.basicinfoId}" /></td>
+      <!-- 实体字段名 realname, telephone, email, jobExperience, jobIntension -->
+      <td th:text="${res.realname}">姓名</td>
+      <td th:text="${res.telephone}">手机</td>
+      <td th:text="${res.email}">Email</td>
+      <td th:text="${res.jobExperience}">工作经验</td>
+      <td th:text="${res.jobIntension}">求职意向</td>
+      <td>
+        <a th:href="@{/resume/edit(id=${res.basicinfoId})}" class="tablelink">修改</a>
+        &nbsp;&nbsp;
+        <a href="#" class="tablelink"
+           th:onclick="|return confirmDelete(${res.basicinfoId});|">删除</a>
+      </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(resumePage.records)}">
+      <td colspan="7" style="text-align:center;color:#999;">暂无简历</td>
+    </tr>
     </tbody>
   </table>
- <div class="pagin">
-    <div class="message">共<i class="blue">1256</i>页，当前显示第&nbsp;<i class="blue">2&nbsp;</i>页</div>
+
+  <div class="pagin">
+    <div class="message">
+      共 <i class="blue" th:text="${resumePage.pages}"></i> 页，
+      当前第 <i class="blue" th:text="${resumePage.current}"></i> 页，
+      总记录数 <i class="blue" th:text="${resumePage.total}"></i> 条
+    </div>
     <ul class="paginList">
-      <li class="paginItem"><a href="javascript:;">首页</a></li>
-      <li class="paginItem"><a href="javascript:;">上一页<span class="pagepre"></span></a></li>
-      <li class="paginItem"><a href="javascript:;">下一页<span class="pagenxt"></span></a></li>
-       <li class="paginItem"><a href="javascript:;">尾页</a></li>
+      <li class="paginItem">
+        <a th:href="@{/resume/lists(pageNum=1,pageSize=${resumePage.size},experience=${currentExperience},keyword=${currentKeyword})}">
+          首页
+        </a>
+      </li>
+      <li class="paginItem" th:if="${resumePage.hasPrevious}">
+        <a th:href="@{/resume/lists(pageNum=${resumePage.current-1},pageSize=${resumePage.size},experience=${currentExperience},keyword=${currentKeyword})}">
+          上一页
+        </a>
+      </li>
+      <li class="paginItem" th:if="${resumePage.hasNext}">
+        <a th:href="@{/resume/lists(pageNum=${resumePage.current+1},pageSize=${resumePage.size},experience=${currentExperience},keyword=${currentKeyword})}">
+          下一页
+        </a>
+      </li>
+      <li class="paginItem">
+        <a th:href="@{/resume/lists(pageNum=${resumePage.pages},pageSize=${resumePage.size},experience=${currentExperience},keyword=${currentKeyword})}">
+          尾页
+        </a>
+      </li>
     </ul>
   </div>
 </div>
+
+<script>
+  function selectAll(checkbox) {
+    document.querySelectorAll('input[name="resumeIds"]').forEach(cb => cb.checked = checkbox.checked);
+  }
+  function confirmDelete(id) {
+    if (confirm(id ? '确定删除这条简历？' : '确定删除选中简历？')) {
+      const form = document.createElement('form');
+      form.method = 'post';
+      form.action = /*[[${'/resume/delete'}]]*/ '/resume/delete';
+      if (id) {
+        const input = document.createElement('input');
+        input.name = 'resumeIds';
+        input.value = id;
+        form.appendChild(input);
+      } else {
+        document.querySelectorAll('input[name="resumeIds"]:checked').forEach(cb => {
+          const h = document.createElement('input');
+          h.name = 'resumeIds';
+          h.value = cb.value;
+          form.appendChild(h);
+        });
+      }
+      document.body.appendChild(form);
+      form.submit();
+    }
+    return false;
+  }
+</script>
 </body>
 </html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <title>添加简历</title>
+    <link th:href="@{/css/manageadmin.css}" rel="stylesheet" type="text/css" />
+    <style>
+        .form-container { max-width: 600px; margin: 20px auto; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; }
+        .form-group input,
+        .form-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .btn-submit { padding: 8px 20px; background-color: #4285f4; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-back { margin-left: 10px; }
+    </style>
+</head>
+<body class="bg-f0f9fd font-sans">
+<div class="place">
+    <span>位置：</span>
+    <ul class="placeul">
+        <li><a th:href="@{/index}">首页</a></li>
+        <li><a th:href="@{/resume/lists}">简历列表</a></li>
+        <li>添加简历</li>
+    </ul>
+</div>
+
+<div class="form-container">
+    <form th:action="@{/resume/add}" method="post">
+        <div class="form-group">
+            <label>姓名</label>
+            <input type="text" name="realname" required />
+        </div>
+        <div class="form-group">
+            <label>性别</label>
+            <select name="gender">
+                <option value="男">男</option>
+                <option value="女">女</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>出生日期</label>
+            <input type="date" name="birthday" />
+        </div>
+        <div class="form-group">
+            <label>现居地</label>
+            <input type="text" name="currentLoc" />
+        </div>
+        <div class="form-group">
+            <label>户籍地</label>
+            <input type="text" name="residentLoc" />
+        </div>
+        <div class="form-group">
+            <label>手机</label>
+            <input type="tel" name="telephone" />
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="emailInput" name="email" readonly />
+        </div>
+        <div class="form-group">
+            <label>申请者</label>
+            <select id="applicantSelect" name="applicantId" required>
+                <option value="">请选择申请者</option>
+                <option th:each="applicant : ${applicants}"
+                        th:value="${applicant.applicantId}"
+                        th:text="${applicant.applicantEmail}"></option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>求职意向</label>
+            <input type="text" name="jobIntension" />
+        </div>
+        <div class="form-group">
+            <label>工作经验</label>
+            <select name="jobExperience">
+                <option value="fresh">应届毕业生</option>
+                <option value="1-3">1-3年</option>
+                <option value="3-5">3-5年</option>
+                <option value=">5">5年以上</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>头像 URL</label>
+            <input type="text" name="headShot" placeholder="可选，填写图片地址" />
+        </div>
+
+        <button type="submit" class="btn-submit">提交</button>
+        <a th:href="@{/resume/lists}" class="btn-back">返回列表</a>
+    </form>
+</div>
+
+<!-- JavaScript 脚本 -->
+<script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        var applicantSelect = document.getElementById("applicantSelect");
+        var emailInput = document.getElementById("emailInput");
+
+        applicantSelect.addEventListener("change", function() {
+            var selectedEmail = this.options[this.selectedIndex].text; // 获取所选选项的文本（邮箱地址）
+            emailInput.value = selectedEmail; // 填充到邮箱输入框
+        });
+    });
+</script>
+</body>
+</html>

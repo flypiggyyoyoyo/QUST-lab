@@ -9,5 +9,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
 * @createDate 2025-06-12 17:06:27
 */
 public interface TbApplicantService extends IService<TbApplicant> {
-
+    public boolean existsById(Integer id);
 }

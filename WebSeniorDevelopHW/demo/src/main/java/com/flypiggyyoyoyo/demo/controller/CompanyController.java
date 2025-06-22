@@ -63,7 +63,7 @@ public class CompanyController {
         TbCompany company = companyService.getById(companyId);
         if (company == null) {
             model.addAttribute("errorMsg", "企业不存在");
-            return "error/404";
+            return "manage/404";
         }
         model.addAttribute("company", company);
         return "manage/companyEdit"; // 返回编辑页面视图名称
