@@ -1,6 +1,7 @@
 package com.flypiggyyoyoyo.demo.model;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.util.Date;
@@ -60,6 +61,12 @@ public class TbJob {
      * 
      */
     private Integer jobState;
+
+    /**
+     * 非数据库字段，仅接收 JOIN 查询结果用于展示
+     */
+    @TableField(exist = false)
+    private String companyName;
 
     @Override
     public boolean equals(Object that) {

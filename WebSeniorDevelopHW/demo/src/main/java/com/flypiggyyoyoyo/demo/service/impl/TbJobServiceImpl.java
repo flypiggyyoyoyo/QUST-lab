@@ -1,10 +1,14 @@
 package com.flypiggyyoyoyo.demo.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.flypiggyyoyoyo.demo.model.TbJob;
 import com.flypiggyyoyoyo.demo.service.TbJobService;
 import com.flypiggyyoyoyo.demo.mapper.TbJobMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 /**
 * @author flypiggy
@@ -13,9 +17,19 @@ import org.springframework.stereotype.Service;
 */
 @Service
 public class TbJobServiceImpl extends ServiceImpl<TbJobMapper, TbJob>
-    implements TbJobService{
+        implements TbJobService {
 
+
+    @Override
+    public IPage<TbJob> getJobPageWithCompany(int pageNum, int pageSize, QueryWrapper<TbJob> wrapper) {
+        if (wrapper == null) {
+            wrapper = new QueryWrapper<>();
+        }
+        Page<TbJob> page = new Page<>(pageNum, pageSize);
+        return baseMapper.selectJobPage(page, wrapper);
+    }
 }
+
 
 
 

@@ -1,5 +1,7 @@
 package com.flypiggyyoyoyo.demo.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.flypiggyyoyoyo.demo.model.TbJob;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -9,5 +11,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 * @createDate 2025-06-12 17:07:48
 */
 public interface TbJobService extends IService<TbJob> {
-
+    /**
+     * 分页查询 Job，并关联 companyName
+     */
+    IPage<TbJob> getJobPageWithCompany(int pageNum, int pageSize, QueryWrapper<TbJob> wrapper);
 }

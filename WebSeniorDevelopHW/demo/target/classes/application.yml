@@ -4,7 +4,7 @@ server:
 # MyBatis-Plus 配置（注意使用 mybatis-plus 前缀）
 mybatis-plus:
   # 指定 MyBatis-Plus 的 Mapper XML 文件路径
-  mapper-locations: classpath:mappers/*.xml      # 修正路径格式，添加斜杠
+  mapper-locations: classpath:/mapper/**/*.xml     # 修正路径格式，添加斜杠
   # 指定实体类包路径（根据实际项目结构调整）
   type-aliases-package: com.flypiggyyoyoyo.demo.entity
   # 配置下划线转驼峰命名规则
@@ -13,7 +13,6 @@ mybatis-plus:
 
     # 启用MyBatis日志（打印SQL）
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-    mapper-locations: classpath*:/mapper/**/*.xml  # 确保Mapper路径正确
 
   # 全局配置（可选）
   global-config:
@@ -29,7 +28,9 @@ mybatis-plus:
 # 配置日志级别（打印完整SQL参数）
 logging:
   level:
-    com.flypiggyyoyoyo.demo.mapper: debug  # 替换为你的Mapper包路径
+    com.flypiggyyoyoyo.demo.mapper: debug
+    org.apache.ibatis: DEBUG
+    com.baomidou.mybatisplus: DEBUG  # 替换为你的Mapper包路径
 
 # 数据源配置
 spring:

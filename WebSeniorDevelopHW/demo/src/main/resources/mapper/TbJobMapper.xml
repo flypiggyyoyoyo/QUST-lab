@@ -4,20 +4,61 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.flypiggyyoyoyo.demo.mapper.TbJobMapper">
 
+    <!-- 原有基础映射，可保留 -->
     <resultMap id="BaseResultMap" type="com.flypiggyyoyoyo.demo.model.TbJob">
-            <id property="jobId" column="JOB_ID" />
-            <result property="companyId" column="COMPANY_ID" />
-            <result property="jobName" column="JOB_NAME" />
-            <result property="jobHiringnum" column="JOB_HIRINGNUM" />
-            <result property="jobSalary" column="JOB_SALARY" />
-            <result property="jobArea" column="JOB_AREA" />
-            <result property="jobDesc" column="JOB_DESC" />
-            <result property="jobEndtime" column="JOB_ENDTIME" />
-            <result property="jobState" column="JOB_STATE" />
+        <id property="jobId" column="JOB_ID" />
+        <result property="companyId" column="COMPANY_ID" />
+        <result property="jobName" column="JOB_NAME" />
+        <result property="jobHiringnum" column="JOB_HIRINGNUM" />
+        <result property="jobSalary" column="JOB_SALARY" />
+        <result property="jobArea" column="JOB_AREA" />
+        <result property="jobDesc" column="JOB_DESC" />
+        <result property="jobEndtime" column="JOB_ENDTIME" />
+        <result property="jobState" column="JOB_STATE" />
     </resultMap>
 
     <sql id="Base_Column_List">
-        JOB_ID,COMPANY_ID,JOB_NAME,JOB_HIRINGNUM,JOB_SALARY,JOB_AREA,
-        JOB_DESC,JOB_ENDTIME,JOB_STATE
+        JOB_ID, COMPANY_ID, JOB_NAME, JOB_HIRINGNUM, JOB_SALARY, JOB_AREA,
+        JOB_DESC, JOB_ENDTIME, JOB_STATE
     </sql>
+
+    <!-- 新增：联表查询映射，包含 companyName -->
+    <resultMap id="JobWithCompanyResultMap" type="com.flypiggyyoyoyo.demo.model.TbJob">
+        <!-- 复用 tb_job 字段映射 -->
+        <id property="jobId" column="JOB_ID" />
+        <result property="companyId" column="COMPANY_ID" />
+        <result property="jobName" column="JOB_NAME" />
+        <result property="jobHiringnum" column="JOB_HIRINGNUM" />
+        <result property="jobSalary" column="JOB_SALARY" />
+        <result property="jobArea" column="JOB_AREA" />
+        <result property="jobDesc" column="JOB_DESC" />
+        <result property="jobEndtime" column="JOB_ENDTIME" />
+        <result property="jobState" column="JOB_STATE" />
+        <!-- 关联公司名称 -->
+        <result property="companyName" column="COMPANY_NAME"/>
+    </resultMap>
+
+    <!-- 新增：分页或列表查询，LEFT JOIN tb_company -->
+    <select id="selectJobPage" resultMap="JobWithCompanyResultMap">
+        SELECT
+            j.JOB_ID,
+            j.COMPANY_ID,
+            j.JOB_NAME,
+            j.JOB_HIRINGNUM,
+            j.JOB_SALARY,
+            j.JOB_AREA,
+            j.JOB_DESC,
+            j.JOB_ENDTIME,
+            j.JOB_STATE,
+            c.COMPANY_NAME AS COMPANY_NAME
+        FROM tb_job j
+                 LEFT JOIN tb_company c ON j.COMPANY_ID = c.COMPANY_ID
+            ${ew.customSqlSegment}
+    </select>
+    <!--
+      注意：
+      - 列出 j.XXX 而非 j.*，以避免同名冲突并保持清晰。
+      - COMPANY_NAME 别名要与 <result property="companyName" column="COMPANY_NAME"/> 对应。
+      - ${ew.customSqlSegment} 来自 Mapper 接口传入的 Wrapper，用于动态 WHERE/ORDER BY 等；若无条件，可传 new QueryWrapper<>()。
+    -->
 </mapper>
