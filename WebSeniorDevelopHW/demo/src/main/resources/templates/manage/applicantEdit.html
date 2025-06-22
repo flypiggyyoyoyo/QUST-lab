@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>编辑求职者</title>
+    <link th:href="@{/css/manageadmin.css}" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div class="place">
+    <span>位置：</span>
+    <ul class="placeul">
+        <li><a href="#">首页</a></li>
+        <li><a href="#">编辑求职者</a></li>
+    </ul>
+</div>
+
+<div class="formbody">
+    <div class="formtitle"><span>求职者信息</span></div>
+    <form th:action="@{/applicant/update}" method="post">
+        <!-- 隐藏字段，用于传递求职者ID -->
+        <input type="hidden" name="applicantId" th:value="${applicant.applicantId}" />
+        <ul class="forminfo">
+            <li>
+                <label>邮箱</label>
+                <input name="applicantEmail" type="text" class="dfinput" th:value="${applicant.applicantEmail}" required />
+            </li>
+            <li>
+                <label>密码</label>
+                <input name="applicantPwd" type="password" class="dfinput" th:value="${applicant.applicantPwd}" required />
+            </li>
+            <li>
+                <label> </label>
+                <input type="submit" class="btn" value="确认保存" />
+            </li>
+        </ul>
+    </form>
+</div>
+</body>
+</html>

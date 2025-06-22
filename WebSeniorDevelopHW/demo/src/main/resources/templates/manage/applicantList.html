@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>申请者列表</title>
+    <link th:href="@{/css/manageadmin.css}" rel="stylesheet" type="text/css" />
+    <script th:src="@{/js/jquery.js}"></script>
+    <style>
+        .search-container { display: flex; gap: 10px; align-items: center; }
+        .search-input { padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; width: 200px; }
+        .search-btn { padding: 6px 15px; background-color: #4285f4; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body class="bg-f0f9fd font-sans">
+<div class="place">
+    <span>位置：</span>
+    <ul class="placeul">
+        <li><a href="#">首页</a></li>
+        <li><a href="#">申请者列表</a></li>
+    </ul>
+</div>
+
+<div class="rightinfo">
+    <!-- 工具栏 -->
+    <div class="tools">
+        <ul class="toolbar">
+            <li class="click">
+                <span><img th:src="@{/images/t01.png}" /></span>
+                <a th:href="@{/applicant/add}" target="rightFrame">添加</a>
+            </li>
+        </ul>
+
+        <!-- 搜索表单 -->
+        <form th:action="@{/applicant/list}" method="get" class="search-container">
+            <input type="text"
+                   id="applicantSearch"
+                   class="search-input"
+                   name="keyword"
+                   placeholder="按邮箱搜索"
+                   th:value="${currentKeyword}" />
+            <button type="submit" id="searchBtn" class="search-btn">搜索</button>
+        </form>
+    </div>
+
+    <!-- 申请者表格 -->
+    <table class="imgtable">
+        <thead>
+        <tr>
+            <th><input name="" type="checkbox" value="" checked="checked"/></th>
+            <th>申请者ID</th>
+            <th>申请者邮箱</th>
+            <th>注册日期</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="applicant : ${applicants}" height="50px">
+            <td>
+                <input type="checkbox"
+                       th:value="${applicant.applicantId}"
+                       name="applicantIds" />
+            </td>
+            <td th:text="${applicant.applicantId}">ID</td>
+            <td th:text="${applicant.applicantEmail}">邮箱</td>
+            <td th:text="${#dates.format(applicant.applicantRegistdate, 'yyyy-MM-dd HH:mm:ss')}">注册日期</td>
+            <td>
+                <a th:href="@{/applicant/edit(applicantId=${applicant.applicantId})}" class="tablelink">修改</a>
+                  
+                <a th:href="@{/applicant/delete(applicantId=${applicant.applicantId})}"
+                   class="tablelink"
+                   onclick="return confirm('确定要删除此申请者吗？');">删除</a>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(applicants)}">
+            <td colspan="5" style="text-align: center; color: #999;">
+                暂无申请者
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- 分页 -->
+    <div class="pagin">
+        <div class="message">
+            共 <i class="blue" th:text="${applicantPage.pages}"></i> 页，
+            当前第 <i class="blue" th:text="${applicantPage.current}"></i> 页，
+            总记录数 <i class="blue" th:text="${applicantPage.total}"></i> 条
+        </div>
+        <ul class="paginList">
+            <li class="paginItem">
+                <a th:href="@{/applicant/list(pageNum=1, pageSize=${applicantPage.size}, keyword=${currentKeyword})}">首页</a>
+            </li>
+            <li class="paginItem" th:if="${applicantPage.hasPrevious()}">
+                <a th:href="@{/applicant/list(pageNum=${applicantPage.current-1}, pageSize=${applicantPage.size}, keyword=${currentKeyword})}">上一页</a>
+            </li>
+            <li class="paginItem" th:if="${applicantPage.hasNext()}">
+                <a th:href="@{/applicant/list(pageNum=${applicantPage.current+1}, pageSize=${applicantPage.size}, keyword=${currentKeyword})}">下一页</a>
+            </li>
+            <li class="paginItem">
+                <a th:href="@{/applicant/list(pageNum=${applicantPage.pages}, pageSize=${applicantPage.size}, keyword=${currentKeyword})}">尾页</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+    $(function() {
+        // 搜索按钮点击事件（演示用）
+        $("#searchBtn").click(function() {
+            const searchText = $("#applicantSearch").val();
+            console.log("搜索关键词:", searchText);
+            // 表单提交会自动处理搜索
+        });
+
+        // 回车键触发搜索
+        $("#applicantSearch").keypress(function(e) {
+            if (e.which === 13) {
+                $("#searchBtn").click();
+            }
+        });
+    });
+</script>
+</body>
+</html>

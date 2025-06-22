@@ -36,6 +36,7 @@
       <li><cite></cite><a th:href="@{/jobApplyList.html}" target="rightFrame">职位申请查看</a><i></i></li>
       <li><cite></cite><a th:href="@{/jobList.html}" target="rightFrame">职位管理</a><i></i></li>
       <li><cite></cite><a th:href="@{/companyList.html}" target="rightFrame">企业管理</a><i></i></li>
+
     </ul>
   </dd>
   <dd>
@@ -43,7 +44,12 @@
       <span><img th:src="@{/images/leftico02.png}" /></span>简历管理
     </div>
     <ul class="menuson">
-      <li><cite></cite><a th:href="@{/resumeList.html}" target="rightFrame">简历查询</a><i></i></li>
+      <li>
+        <cite></cite>
+        <!-- 修改这一行： -->
+        <a th:href="@{/resume/lists}" target="rightFrame">简历查询</a>
+        <i></i>
+      </li>
     </ul>
   </dd>
   <dd>
@@ -52,6 +58,7 @@
     </div>
     <ul class="menuson">
       <li><cite></cite><a th:href="@{/userList.html}" target="rightFrame">用户管理</a><i></i></li>
+      <li><cite></cite><a th:href="@{/applicant/list}" target="rightFrame">求职者管理</a><i></i></li>
     </ul>
   </dd>
   <dd>
