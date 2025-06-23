@@ -28,6 +28,16 @@ public class TbJobServiceImpl extends ServiceImpl<TbJobMapper, TbJob>
         Page<TbJob> page = new Page<>(pageNum, pageSize);
         return baseMapper.selectJobPage(page, wrapper);
     }
+
+    @Override
+    public boolean deleteJobById(Long id) {
+        return this.removeById(id);
+    }
+
+    @Override
+    public boolean updateJob(TbJob job) {
+        return this.updateById(job);
+    }
 }
 
 

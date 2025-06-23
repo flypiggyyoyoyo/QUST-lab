@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <title>编辑职位</title>
+    <link th:href="@{/css/manageadmin.css}" rel="stylesheet"/>
+</head>
+<body>
+<div class="place">
+    <span>位置：</span>
+    <ul class="placeul">
+        <li><a th:href="@{/}">首页</a></li>
+        <li><a th:href="@{/job/list}">职位列表</a></li>
+        <li>编辑职位</li>
+    </ul>
+</div>
+
+<div class="formbody">
+    <form th:action="@{/job/edit}" th:object="${job}" method="post">
+        <input type="hidden" th:field="*{jobId}" />
+
+        <ul class="forminfo">
+            <li>
+                <label>职位名称</label>
+                <input type="text" th:field="*{jobName}" class="dfinput" placeholder="请输入职位名称"/>
+                <div th:if="${#fields.hasErrors('jobName')}" th:errors="*{jobName}" class="error"></div>
+            </li>
+            <li>
+                <label>所属公司</label>
+                <select th:field="*{companyId}" class="dfinput">
+                    <option th:each="c: ${companies}"
+                            th:value="${c.companyId}"
+                            th:text="${c.companyName}"
+                            th:selected="${c.companyId == job.companyId}">
+                    </option>
+                </select>
+            </li>
+            <li>
+                <label>招聘人数</label>
+                <input type="number" th:field="*{jobHiringnum}" class="dfinput"/>
+            </li>
+            <li>
+                <label>薪资</label>
+                <input type="text" th:field="*{jobSalary}" class="dfinput"/>
+            </li>
+            <li>
+                <label>地区</label>
+                <input type="text" th:field="*{jobArea}" class="dfinput"/>
+            </li>
+            <li>
+                <label>描述</label>
+                <textarea th:field="*{jobDesc}" class="textinput"></textarea>
+            </li>
+            <li>
+                <label>结束时间</label>
+                <input type="date" th:field="*{jobEndtime}" class="dfinput"/>
+            </li>
+            <li>
+                <label>状态</label>
+                <select th:field="*{jobState}" class="dfinput">
+                    <option th:value="1" th:text="'启用'"></option>
+                    <option th:value="0" th:text="'禁用'"></option>
+                </select>
+            </li>
+            <li>
+                <label>&nbsp;</label>
+                <button type="submit" class="btn">保存修改</button>
+                <a th:href="@{/job/list}" class="btn btn-cancel">取消</a>
+            </li>
+        </ul>
+    </form>
+</div>
+</body>
+</html>

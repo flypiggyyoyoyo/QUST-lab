@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -177,6 +178,11 @@ public class TbCompanyServiceImpl extends ServiceImpl<TbCompanyMapper, TbCompany
         if (!ok) {
             throw new DatabaseException("数据库异常，更新企业信息失败");
         }
+    }
+
+    @Override
+    public List<TbCompany> getAllCompanies() {
+        return list();
     }
 
     private boolean isRegister(String companyName) {

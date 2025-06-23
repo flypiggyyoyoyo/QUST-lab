@@ -1,93 +1,24 @@
-
-<!--<!DOCTYPE html>-->
-<!--<html xmlns:th="http://www.thymeleaf.org">-->
-<!--<head>-->
-<!--  <meta charset="UTF-8" />-->
-<!--  <title>职位列表</title>-->
-<!--</head>-->
-<!--<body>-->
-<!--<h1>职位列表</h1>-->
-
-<!--&lt;!&ndash; 过滤表单（可选） &ndash;&gt;-->
-<!--<form th:action="@{/job/list}" method="get">-->
-<!--  <input type="text" name="jobNameFilter" th:value="${jobNameFilter}" placeholder="职位名" />-->
-<!--  <input type="number" name="companyIdFilter" th:value="${companyIdFilter}" placeholder="公司ID" />-->
-<!--  <button type="submit">搜索</button>-->
-<!--</form>-->
-
-<!--<table border="1">-->
-<!--  <thead>-->
-<!--  <tr>-->
-<!--    <th>职位ID</th>-->
-<!--    <th>职位名称</th>-->
-<!--    <th>公司ID</th>-->
-<!--    <th>公司名称</th>-->
-<!--    <th>招聘人数</th>-->
-<!--    <th>薪资</th>-->
-<!--    <th>地区</th>-->
-<!--    <th>描述</th>-->
-<!--    <th>结束时间</th>-->
-<!--    <th>状态</th>-->
-<!--  </tr>-->
-<!--  </thead>-->
-<!--  <tbody>-->
-<!--  <tr th:each="job : ${page.records}">-->
-<!--    <td th:text="${job.jobId}">ID</td>-->
-<!--    <td th:text="${job.jobName}">名称</td>-->
-<!--    <td th:text="${job.companyId}">公司ID</td>-->
-<!--    &lt;!&ndash; companyName 由 JOIN 填充 &ndash;&gt;-->
-<!--    <td th:text="${job.companyName} ?: '—'">公司名称</td>-->
-<!--    <td th:text="${job.jobHiringnum}">人数</td>-->
-<!--    <td th:text="${job.jobSalary}">薪资</td>-->
-<!--    <td th:text="${job.jobArea}">地区</td>-->
-<!--    <td th:text="${job.jobDesc}">描述</td>-->
-<!--    <td th:text="${#dates.format(job.jobEndtime, 'yyyy-MM-dd')}">结束时间</td>-->
-<!--    <td th:text="${job.jobState}">状态</td>-->
-<!--  </tr>-->
-<!--  </tbody>-->
-<!--</table>-->
-
-<!--&lt;!&ndash; 简单分页导航 &ndash;&gt;-->
-<!--<div>-->
-<!--  <span th:text="'第 ' + ${page.current} + ' 页 / 共 ' + ${page.pages} + ' 页'"></span>-->
-<!--  <div>-->
-<!--    <a th:if="${page.hasPrevious()}"-->
-<!--       th:href="@{/job/list(page=${page.current - 1}, size=${page.size}, jobNameFilter=${jobNameFilter}, companyIdFilter=${companyIdFilter})}">-->
-<!--      上一页-->
-<!--    </a>-->
-<!--    <a th:if="${page.hasNext()}"-->
-<!--       th:href="@{/job/list(page=${page.current + 1}, size=${page.size}, jobNameFilter=${jobNameFilter}, companyIdFilter=${companyIdFilter})}">-->
-<!--      下一页-->
-<!--    </a>-->
-<!--  </div>-->
-<!--</div>-->
-
-<!--</body>-->
-<!--</html>-->
-
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="utf-8">
   <title>职位列表</title>
-  <!-- 自定义管理后台 CSS -->
-  <link th:href="@{/css/manageadmin.css}" rel="stylesheet" type="text/css" />
-  <!-- jQuery（若已有可省略） -->
+  <!-- 样式 & 脚本 -->
+  <link th:href="@{/css/manageadmin.css}" rel="stylesheet" />
   <script th:src="@{/js/jquery.js}"></script>
+
   <style>
-    /* 根据示例添加搜索区域样式 */
+    .tablelink { color: #4285f4; text-decoration: none; cursor: pointer; }
+    .tablelink:hover { text-decoration: underline; }
     .search-container { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
-    .filter-select, .search-input { padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; }
-    .search-input { width: 200px; }
+    .search-input { padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; width: 200px; }
     .search-btn { padding: 6px 15px; background-color: #4285f4; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    /* 表格样式：可在 manageadmin.css 中已有基础，这里如需小调整可放在此 */
     .imgtable { width: 100%; border-collapse: collapse; margin-top: 10px; }
     .imgtable th, .imgtable td { border: 1px solid #ddd; padding: 8px; text-align: left; }
     .imgtable th { background-color: #f9f9f9; }
     .imgtable tr:hover { background-color: #f1f1f1; }
     .td-desc { max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    /* 分页样式：若 manageadmin.css 中已有 .pagin, .paginList 等，可略；否则可微调 */
     .pagin { margin-top: 15px; }
     .pagin .message { font-size: 0.9rem; color: #666; margin-bottom: 5px; }
     .paginList { list-style: none; display: flex; gap: 5px; padding: 0; }
@@ -96,143 +27,130 @@
     .paginItem .active a { background-color: #4285f4; color: white; border-color: #4285f4; }
     .paginItem.disabled a { color: #aaa; pointer-events: none; border-color: #eee; }
     .blue { color: #4285f4; }
-    /* 操作链接样式，可在 manageadmin.css 中统一定义 .tablelink */
-    .tablelink { color: #4285f4; text-decoration: none; }
-    .tablelink:hover { text-decoration: underline; }
   </style>
+
+  <!-- 动态 POST 提交脚本（无 CSRF） -->
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    function confirmDelete(jobId) {
+      if (!confirm('确定要删除 ID=' + jobId + ' 的职位吗？')) {
+        return;
+      }
+      // 创建并提交隐藏表单
+      var form = document.createElement('form');
+      form.method = 'post';
+      form.action = /*[[@{/job/delete}]]*/ '/job/delete';
+
+      var input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'jobId';
+      input.value = jobId;
+      form.appendChild(input);
+
+      document.body.appendChild(form);
+      form.submit();
+    }
+    /*]]>*/
+  </script>
 </head>
+
 <body class="bg-f0f9fd font-sans">
 <!-- 位置导航 -->
 <div class="place">
   <span>位置：</span>
   <ul class="placeul">
     <li><a th:href="@{/}">首页</a></li>
-    <li><a href="#">职位列表</a></li>
+    <li>职位列表</li>
   </ul>
 </div>
 
 <div class="rightinfo">
-  <!-- 工具栏：可添加“添加职位”等按钮 -->
+  <!-- 工具栏 -->
   <div class="tools">
     <ul class="toolbar">
       <li class="click">
         <span><img th:src="@{/images/t01.png}" alt="添加" /></span>
-        <a th:href="@{/job/add}" target="rightFrame">添加</a>
+        <a th:href="@{/job/add}">添加</a>
       </li>
-      <!-- 如需批量操作，可加更多按钮 -->
-      <!--
-      <li class="click">
-        <span><img th:src="@{/images/t02.png}" alt="修改" /></span>
-        <a th:href="@{/job/editForm}" target="rightFrame">修改</a>
-      </li>
-      <li>
-        <span><img th:src="@{/images/t03.png}" alt="删除" /></span>
-        <a href="#" target="rightFrame" th:onclick="'return confirmBatchDelete();'">删除</a>
-      </li>
-      -->
     </ul>
-
-    <!-- 搜索/过滤表单 -->
-    <form th:action="@{/job/list}" method="get" class="search-container">
-      <!-- 职位名称模糊搜索 -->
-      <input type="text"
-             class="search-input"
-             name="jobNameFilter"
-             th:value="${jobNameFilter}"
-             placeholder="职位名称" />
-      <!-- 公司ID过滤 -->
-      <input type="number"
-             class="search-input"
-             name="companyIdFilter"
-             th:value="${companyIdFilter}"
-             placeholder="公司ID" />
-      <button type="submit" class="search-btn">搜索</button>
-      <!-- 重置按钮清除过滤 -->
-      <a th:href="@{/job/list}" class="search-btn" style="background-color:#6c757d;">重置</a>
-    </form>
   </div>
 
-  <!-- 数据表格 -->
+  <!-- 搜索/过滤表单 -->
+  <form th:action="@{/job/list}" method="get" class="search-container">
+    <input class="search-input" type="text" name="jobNameFilter"
+           th:value="${jobNameFilter}" placeholder="职位名称" />
+    <input class="search-input" type="number" name="companyIdFilter"
+           th:value="${companyIdFilter}" placeholder="公司ID" />
+    <button type="submit" class="search-btn">搜索</button>
+    <a th:href="@{/job/list}" class="search-btn" style="background:#6c757d;">重置</a>
+  </form>
+
+  <!-- 职位表格 -->
   <table class="imgtable">
     <thead>
     <tr>
       <th><input type="checkbox" onclick="toggleAll(this)" /></th>
-      <th>职位ID</th>
-      <th>职位名称</th>
-      <th>公司ID</th>
-      <th>公司名称</th>
-      <th>招聘人数</th>
-      <th>薪资</th>
-      <th>地区</th>
-      <th>描述</th>
-      <th>结束时间</th>
-      <th>状态</th>
-      <th>操作</th>
+      <th>职位ID</th><th>名称</th><th>公司ID</th><th>公司名称</th>
+      <th>人数</th><th>薪资</th><th>地区</th><th>描述</th>
+      <th>结束时间</th><th>状态</th><th>操作</th>
     </tr>
     </thead>
     <tbody>
-    <!-- 遍历职位记录 -->
     <tr th:each="job : ${page.records}" height="50px">
-      <!-- 复选框，可用于批量操作 -->
-      <td>
-        <input type="checkbox"
-               name="jobIds"
-               th:value="${job.jobId}" />
-      </td>
+      <td><input type="checkbox" name="jobIds" th:value="${job.jobId}" /></td>
       <td th:text="${job.jobId}">ID</td>
-      <td th:text="${job.jobName}">职位名称</td>
-      <td th:text="${job.companyId}">公司ID</td>
-      <td th:text="${job.companyName} ?: '—'">公司名称</td>
+      <td th:text="${job.jobName}">名称</td>
+      <td th:text="${job.companyId}">CID</td>
+      <td th:text="${job.companyName} ?: '—'">公司</td>
       <td th:text="${job.jobHiringnum}">人数</td>
       <td th:text="${job.jobSalary}">薪资</td>
       <td th:text="${job.jobArea}">地区</td>
-      <td class="td-desc"
-          th:attr="title=${job.jobDesc}"
-          th:text="${job.jobDesc}">描述</td>
-      <td th:text="${job.jobEndtime != null} ? ${#dates.format(job.jobEndtime, 'yyyy-MM-dd')} : '—'">结束时间</td>
+      <td class="td-desc" th:attr="title=${job.jobDesc}" th:text="${job.jobDesc}">描述</td>
+      <td th:text="${job.jobEndtime != null} ? ${#dates.format(job.jobEndtime, 'yyyy-MM-dd')} : '—'">结束</td>
       <td th:text="${job.jobState == 1} ? '启用' : '禁用'">状态</td>
-      <!-- 操作列：编辑、删除等 -->
       <td>
         <a th:href="@{/job/edit(jobId=${job.jobId})}" class="tablelink">修改</a>
         &nbsp;|&nbsp;
-        <a href="#" class="tablelink"
-           th:onclick="'return confirmDelete(' + ${job.jobId} + ');'">删除</a>
+        <a href="javascript:void(0);" class="tablelink"
+           th:onclick="'confirmDelete(' + ${job.jobId} + ');'">
+          删除
+        </a>
       </td>
     </tr>
-    <!-- 无数据时 -->
     <tr th:if="${#lists.isEmpty(page.records)}">
-      <td colspan="12" style="text-align: center; color: #999;">暂无职位</td>
+      <td colspan="12" style="text-align:center;color:#999;">暂无职位</td>
     </tr>
     </tbody>
   </table>
 
-  <!-- 分页区域 -->
+  <!-- 分页 -->
   <div class="pagin">
     <div class="message">
       共 <i class="blue" th:text="${page.pages}">0</i> 页，
       当前第 <i class="blue" th:text="${page.current}">1</i> 页，
-      总记录数 <i class="blue" th:text="${page.total}">0</i> 条
+      总 <i class="blue" th:text="${page.total}">0</i> 条
     </div>
     <ul class="paginList">
-      <!-- 首页 -->
       <li class="paginItem" th:classappend="${page.current == 1} ? 'disabled'">
-        <a th:href="@{/job/list(page=1, size=${page.size}, jobNameFilter=${jobNameFilter}, companyIdFilter=${companyIdFilter})}">首页</a>
+        <a th:href="@{/job/list(page=1,size=${page.size},jobNameFilter=${jobNameFilter},companyIdFilter=${companyIdFilter})}">首页</a>
       </li>
-      <!-- 上一页 -->
-      <li class="paginItem" th:if="${page.hasPrevious()}" >
-        <a th:href="@{/job/list(page=${page.current-1}, size=${page.size}, jobNameFilter=${jobNameFilter}, companyIdFilter=${companyIdFilter})}">上一页</a>
+      <li class="paginItem" th:if="${page.hasPrevious()}">
+        <a th:href="@{/job/list(page=${page.current-1},size=${page.size},jobNameFilter=${jobNameFilter},companyIdFilter=${companyIdFilter})}">
+          上一页
+        </a>
       </li>
-      <!-- 中间页，可显示当前前后几页，这里简单只显示当前页 -->
       <li class="paginItem active">
         <a href="javascript:void(0)" th:text="${page.current}">1</a>
       </li>
-      <!-- 下一页 -->
       <li class="paginItem" th:if="${page.hasNext()}">
-        <a th:href="@{/job/list(page=${page.current+1}, size=${page.size}, jobNameFilter=${jobNameFilter}, companyIdFilter=${companyIdFilter})}">下一页</a>
+        <a th:href="@{/job/list(page=${page.current+1},size=${page.size},jobNameFilter=${jobNameFilter},companyIdFilter=${companyIdFilter})}">
+          下一页
+        </a>
       </li>
-      <!-- 尾页 -->
       <li class="paginItem" th:classappend="${page.current == page.pages} ? 'disabled'">
-        <a th:href="@{/job/list(page=${page.pages}, size=${page.size}, jobNameFilter=${jobNameFilter}, companyIdFilter=${companyIdFilter})}">尾页</a>
+        <a th:href="@{/job/list(page=${page.pages},size=${page.size},jobNameFilter=${jobNameFilter},companyIdFilter=${companyIdFilter})}">
+          尾页
+        </a>
       </li>
     </ul>
   </div>
@@ -240,22 +158,9 @@
 
 <script>
   // 全选/反选
-  function toggleAll(source) {
-    const checkboxes = document.getElementsByName('jobIds');
-    for (let i = 0; i < checkboxes.length; i++) {
-      checkboxes[i].checked = source.checked;
-    }
+  function toggleAll(src) {
+    document.getElementsByName('jobIds').forEach(cb => cb.checked = src.checked);
   }
-  // 单条删除确认
-  function confirmDelete(jobId) {
-    if (confirm('确定要删除ID为 ' + jobId + ' 的职位吗？')) {
-      // 可通过表单提交或AJAX请求删除
-      // 例如：window.location.href = '/job/delete?jobId=' + jobId;
-    }
-    return false;
-  }
-  // 如需批量删除，可实现 confirmBatchDelete 函数
 </script>
 </body>
 </html>
-

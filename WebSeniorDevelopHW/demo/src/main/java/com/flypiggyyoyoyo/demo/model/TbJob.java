@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.util.Date;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * 
@@ -55,6 +56,7 @@ public class TbJob {
     /**
      * 
      */
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date jobEndtime;
 
     /**

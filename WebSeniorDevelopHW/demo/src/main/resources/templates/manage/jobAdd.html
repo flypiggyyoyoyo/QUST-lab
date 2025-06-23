@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>添加职位</title>
+    <!-- 使用与职位列表相同的 CSS 文件 -->
+    <link th:href="@{/css/manageadmin.css}" rel="stylesheet" type="text/css" />
+    <!-- jQuery（若已有可省略） -->
+    <script th:src="@{/js/jquery.js}"></script>
+    <style>
+        /* 表单容器样式 */
+        .form-container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .form-group textarea {
+            height: 100px;
+        }
+        .form-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .submit-btn,
+        .cancel-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .submit-btn {
+            background-color: #4285f4;
+            color: white;
+        }
+        .cancel-btn {
+            background-color: #6c757d;
+            color: white;
+        }
+        .error-message {
+            color: red;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body class="bg-f0f9fd font-sans">
+<!-- 位置导航，与职位列表一致 -->
+<div class="place">
+    <span>位置：</span>
+    <ul class="placeul">
+        <li><a th:href="@{/}">首页</a></li>
+        <li><a th:href="@{/job/list}">职位列表</a></li>
+        <li><a href="#">添加职位</a></li>
+    </ul>
+</div>
+
+<!-- 表单容器 -->
+<div class="form-container">
+    <h2>添加职位</h2>
+    <form th:action="@{/job/add}" method="post" th:object="${job}">
+        <!-- 职位名称 -->
+        <div class="form-group">
+            <label for="jobName">职位名称</label>
+            <input type="text" id="jobName" th:field="*{jobName}" required />
+            <span class="error-message" th:if="${#fields.hasErrors('jobName')}" th:errors="*{jobName}"></span>
+        </div>
+
+        <!-- 公司选择（下拉列表） -->
+        <div class="form-group">
+            <label for="companyId">公司</label>
+            <select id="companyId" th:field="*{companyId}" required>
+                <option value="">请选择公司</option>
+                <option th:each="company : ${companies}"
+                        th:value="${company.companyId}"
+                        th:text="${company.companyName}"></option>
+            </select>
+            <span class="error-message" th:if="${#fields.hasErrors('companyId')}" th:errors="*{companyId}"></span>
+        </div>
+
+        <!-- 招聘人数 -->
+        <div class="form-group">
+            <label for="jobHiringnum">招聘人数</label>
+            <input type="number" id="jobHiringnum" th:field="*{jobHiringnum}" required min="1" />
+            <span class="error-message" th:if="${#fields.hasErrors('jobHiringnum')}" th:errors="*{jobHiringnum}"></span>
+        </div>
+
+        <!-- 薪资 -->
+        <div class="form-group">
+            <label for="jobSalary">薪资</label>
+            <input type="text" id="jobSalary" th:field="*{jobSalary}" required />
+            <span class="error-message" th:if="${#fields.hasErrors('jobSalary')}" th:errors="*{jobSalary}"></span>
+        </div>
+
+        <!-- 地区 -->
+        <div class="form-group">
+            <label for="jobArea">地区</label>
+            <input type="text" id="jobArea" th:field="*{jobArea}" required />
+            <span class="error-message" th:if="${#fields.hasErrors('jobArea')}" th:errors="*{jobArea}"></span>
+        </div>
+
+        <!-- 描述 -->
+        <div class="form-group">
+            <label for="jobDesc">描述</label>
+            <textarea id="jobDesc" th:field="*{jobDesc}"></textarea>
+            <span class="error-message" th:if="${#fields.hasErrors('jobDesc')}" th:errors="*{jobDesc}"></span>
+        </div>
+
+        <!-- 结束时间 -->
+        <div class="form-group">
+            <label for="jobEndtime">结束时间</label>
+            <input type="date" id="jobEndtime" th:field="*{jobEndtime}" />
+            <span class="error-message" th:if="${#fields.hasErrors('jobEndtime')}" th:errors="*{jobEndtime}"></span>
+        </div>
+
+        <!-- 状态 -->
+        <div class="form-group">
+            <label for="jobState">状态</label>
+            <select id="jobState" th:field="*{jobState}">
+                <option value="1">启用</option>
+                <option value="0">禁用</option>
+            </select>
+            <span class="error-message" th:if="${#fields.hasErrors('jobState')}" th:errors="*{jobState}"></span>
+        </div>
+
+        <!-- 提交和取消按钮 -->
+        <div class="form-buttons">
+            <button type="submit" class="submit-btn">提交</button>
+            <a th:href="@{/job/list}" class="cancel-btn">取消</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    // 客户端验证示例（可选）
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const jobName = document.getElementById('jobName').value;
+        const companyId = document.getElementById('companyId').value;
+        if (!jobName || !companyId) {
+            alert('职位名称和公司为必填项');
+            e.preventDefault();
+        }
+    });
+</script>
+</body>
+</html>

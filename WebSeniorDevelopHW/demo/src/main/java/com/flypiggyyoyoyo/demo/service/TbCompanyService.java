@@ -7,6 +7,8 @@ import com.flypiggyyoyoyo.demo.data.company.update.CompanyUpdateRequest;
 import com.flypiggyyoyoyo.demo.model.TbCompany;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
+
 /**
 * @author flypiggy
 * @description 针对表【tb_company】的数据库操作Service
@@ -26,4 +28,10 @@ public interface TbCompanyService extends IService<TbCompany> {
     IPage<TbCompany> getCompanyPage(int pageNum, int pageSize, String name, String size);
 
     void updateCompany(CompanyUpdateRequest req);
+
+    /**
+     * 获取所有公司列表
+     * @return 公司列表
+     */
+    List<TbCompany> getAllCompanies();
 }
