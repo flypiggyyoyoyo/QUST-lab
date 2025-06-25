@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 /**
- * 
+ *
  * @TableName tb_applicant
  */
 @TableName(value ="tb_applicant")
@@ -16,25 +16,27 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class TbApplicant {
     /**
-     * 
+     *
      */
     @TableId(type = IdType.AUTO)
     private Integer applicantId;
 
     /**
-     * 
+     *
      */
     private String applicantEmail;
 
     /**
-     * 
+     *
      */
     private String applicantPwd;
 
     /**
-     * 
+     *
      */
     private Date applicantRegistdate;
+
+    private String applicantName;
 
     @Override
     public boolean equals(Object that) {
@@ -51,7 +53,8 @@ public class TbApplicant {
         return (this.getApplicantId() == null ? other.getApplicantId() == null : this.getApplicantId().equals(other.getApplicantId()))
             && (this.getApplicantEmail() == null ? other.getApplicantEmail() == null : this.getApplicantEmail().equals(other.getApplicantEmail()))
             && (this.getApplicantPwd() == null ? other.getApplicantPwd() == null : this.getApplicantPwd().equals(other.getApplicantPwd()))
-            && (this.getApplicantRegistdate() == null ? other.getApplicantRegistdate() == null : this.getApplicantRegistdate().equals(other.getApplicantRegistdate()));
+            && (this.getApplicantRegistdate() == null ? other.getApplicantRegistdate() == null : this.getApplicantRegistdate().equals(other.getApplicantRegistdate()))
+            && (applicantName == null ? other.applicantName == null : applicantName.equals(other.applicantName));
     }
 
     @Override
@@ -62,6 +65,7 @@ public class TbApplicant {
         result = prime * result + ((getApplicantEmail() == null) ? 0 : getApplicantEmail().hashCode());
         result = prime * result + ((getApplicantPwd() == null) ? 0 : getApplicantPwd().hashCode());
         result = prime * result + ((getApplicantRegistdate() == null) ? 0 : getApplicantRegistdate().hashCode());
+        result = prime * result + ((applicantName == null) ? 0 : applicantName.hashCode());
         return result;
     }
 
@@ -75,6 +79,7 @@ public class TbApplicant {
         sb.append(", applicantEmail=").append(applicantEmail);
         sb.append(", applicantPwd=").append(applicantPwd);
         sb.append(", applicantRegistdate=").append(applicantRegistdate);
+        sb.append(", applicantName=").append(applicantName);
         sb.append("]");
         return sb.toString();
     }

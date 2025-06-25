@@ -44,13 +44,15 @@ public class ApplicantController {
     @PostMapping("/applicant/add")
     public String addApplicant(
             @RequestParam("applicantEmail") String applicantEmail,
-            @RequestParam("applicantPwd") String applicantPwd) {
+            @RequestParam("applicantPwd") String applicantPwd,
+            @RequestParam("applicantName") String applicantName) {
         TbApplicant applicant = new TbApplicant();
         applicant.setApplicantEmail(applicantEmail);
         applicant.setApplicantPwd(applicantPwd);
-        applicant.setApplicantRegistdate(new Date()); // 自动设置注册时间为当前时间
-        applicantService.save(applicant); // 调用 Service 层保存到数据库
-        return "redirect:/applicant/list"; // 保存后重定向到列表页面
+        applicant.setApplicantName(applicantName);
+        applicant.setApplicantRegistdate(new Date());
+        applicantService.save(applicant);
+        return "redirect:/applicant/list";
     }
 
     /**
@@ -79,15 +81,16 @@ public class ApplicantController {
     public String updateApplicant(
             @RequestParam("applicantId") int applicantId,
             @RequestParam("applicantEmail") String applicantEmail,
-            @RequestParam("applicantPwd") String applicantPwd) {
+            @RequestParam("applicantPwd") String applicantPwd,
+            @RequestParam("applicantName") String applicantName) {
         // 创建求职者对象并设置更新后的值
         TbApplicant applicant = new TbApplicant();
         applicant.setApplicantId(applicantId);
         applicant.setApplicantEmail(applicantEmail);
         applicant.setApplicantPwd(applicantPwd);
-        // 更新数据库
+        applicant.setApplicantName(applicantName);
         applicantService.updateById(applicant);
-        // 重定向到列表页面，避免表单重复提交
+
         return "redirect:/applicant/list";
     }
 

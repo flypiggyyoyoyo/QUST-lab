@@ -61,6 +61,7 @@
                        name="applicantIds" />
             </td>
             <td th:text="${applicant.applicantId}">ID</td>
+            <td th:text="${applicant.getApplicantName()}">姓名</td>
             <td th:text="${applicant.applicantEmail}">邮箱</td>
             <td th:text="${#dates.format(applicant.applicantRegistdate, 'yyyy-MM-dd HH:mm:ss')}">注册日期</td>
             <td>

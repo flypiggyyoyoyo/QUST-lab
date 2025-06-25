@@ -5,13 +5,15 @@
 <mapper namespace="com.flypiggyyoyoyo.demo.mapper.TbApplicantMapper">
 
     <resultMap id="BaseResultMap" type="com.flypiggyyoyoyo.demo.model.TbApplicant">
-            <id property="applicantId" column="APPLICANT_ID" />
-            <result property="applicantEmail" column="APPLICANT_EMAIL" />
-            <result property="applicantPwd" column="APPLICANT_PWD" />
-            <result property="applicantRegistdate" column="APPLICANT_REGISTDATE" />
+        <id property="applicantId" column="APPLICANT_ID" />
+        <result property="applicantEmail" column="APPLICANT_EMAIL" />
+        <result property="applicantPwd" column="APPLICANT_PWD" />
+        <result property="applicantRegistdate" column="APPLICANT_REGISTDATE" />
+        <result property="applicantName" column="APPLICANT_NAME" /> 
     </resultMap>
 
     <sql id="Base_Column_List">
-        APPLICANT_ID,APPLICANT_EMAIL,APPLICANT_PWD,APPLICANT_REGISTDATE
+        APPLICANT_ID, APPLICANT_EMAIL, APPLICANT_PWD, APPLICANT_REGISTDATE, APPLICANT_NAME <!-- ✅ 新增 -->
     </sql>
+
 </mapper>
