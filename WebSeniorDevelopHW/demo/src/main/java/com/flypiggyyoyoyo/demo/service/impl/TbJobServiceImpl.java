@@ -7,9 +7,11 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.flypiggyyoyoyo.demo.model.TbJob;
 import com.flypiggyyoyoyo.demo.service.TbJobService;
 import com.flypiggyyoyoyo.demo.mapper.TbJobMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -21,6 +23,8 @@ import java.util.List;
 public class TbJobServiceImpl extends ServiceImpl<TbJobMapper, TbJob>
         implements TbJobService {
 
+    @Autowired
+    private TbJobMapper jobMapper;
 
     @Override
     public IPage<TbJob> getJobPageWithCompany(int pageNum, int pageSize, QueryWrapper<TbJob> wrapper) {
@@ -45,6 +49,15 @@ public class TbJobServiceImpl extends ServiceImpl<TbJobMapper, TbJob>
     public List<TbJob> getAllJobs() {
         return this.list();
     }
+
+    @Override
+    public int deleteInvalidJobs() {
+        QueryWrapper<TbJob> wrapper = new QueryWrapper<>();
+        wrapper.lt("job_endtime", new Date());
+        wrapper.notInSql("job_id", "SELECT job_id FROM tb_jobapply");
+        return jobMapper.delete(wrapper);
+    }
+
 }
 
 

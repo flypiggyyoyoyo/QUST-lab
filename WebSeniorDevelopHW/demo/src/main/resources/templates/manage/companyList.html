@@ -256,9 +256,9 @@
         <span><img th:src="@{/images/t01.png}" alt="添加" style="margin-right: 5px; vertical-align: middle;" /></span>
         添加
       </a>
-      <a href="javascript:void(0);" onclick="deleteSelectedCompanies()" class="btn btn-danger">
-        <span><img th:src="@{/images/t03.png}" alt="删除" style="margin-right: 5px; vertical-align: middle;" /></span>
-        删除
+      <a th:href="@{/company/job/deleteInvalid}" class="btn btn-danger">
+        <span><img th:src="@{/images/t03.png}" alt="删除无效职位" style="margin-right: 5px; vertical-align: middle;" /></span>
+        删除无效职位
       </a>
     </div>
   </header>

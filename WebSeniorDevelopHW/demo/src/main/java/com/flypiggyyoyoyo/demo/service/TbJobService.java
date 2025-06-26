@@ -24,4 +24,6 @@ public interface TbJobService extends IService<TbJob> {
     boolean updateJob(TbJob job);
 
     List<TbJob> getAllJobs();
+
+    public int deleteInvalidJobs();
 }

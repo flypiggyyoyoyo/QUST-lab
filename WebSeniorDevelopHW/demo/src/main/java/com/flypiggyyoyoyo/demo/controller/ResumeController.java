@@ -2,7 +2,6 @@ package com.flypiggyyoyoyo.demo.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.flypiggyyoyoyo.demo.model.TbApplicant;
 import com.flypiggyyoyoyo.demo.model.TbResumeBasicinfo;
 import com.flypiggyyoyoyo.demo.service.TbApplicantService;
 import com.flypiggyyoyoyo.demo.service.TbResumeBasicinfoService;
@@ -106,4 +105,6 @@ public class ResumeController {
         resumeService.save(res);
         return "redirect:/resume/lists";
     }
+
+
 }

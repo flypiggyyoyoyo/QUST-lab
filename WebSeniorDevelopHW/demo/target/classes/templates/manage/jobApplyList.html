@@ -3,49 +3,250 @@
 <head>
     <meta charset="UTF-8">
     <title>职位申请列表</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        neutral: '#6B7280',
+                        'neutral-light': '#F3F4F6',
+                        'neutral-dark': '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .table-shadow {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .btn-hover {
+                @apply transition-all duration-200 ease-in-out transform hover:scale-105 hover:shadow-lg;
+            }
+            .status-pill {
+                @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+            }
+        }
+    </style>
 </head>
-<body>
-<h2>职位申请列表</h2>
+<body class="bg-gray-50 min-h-screen font-sans">
+<div class="container mx-auto px-4 py-8 max-w-6xl">
+    <!-- 页面标题 -->
+    <div class="mb-8">
+        <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-neutral-dark flex items-center">
+            <i class="fa fa-list-alt mr-3 text-primary"></i>
+            职位申请列表
+            <span class="ml-3 text-sm font-normal text-neutral" th:text="${'共 ' + page.total + ' 条申请'}"></span>
+        </h1>
+    </div>
 
-<form action="#" method="get">
-    <label for="applicantNameFilter">申请者名称:</label>
-    <input type="text" id="applicantNameFilter" name="applicantNameFilter" th:value="${applicantNameFilter}"/>
-    <label for="jobNameFilter">岗位名称:</label>
-    <input type="text" id="jobNameFilter" name="jobNameFilter" th:value="${jobNameFilter}"/>
-    <button type="submit">搜索</button>
-</form>
+    <!-- 搜索表单 -->
+    <div class="bg-white rounded-xl p-6 mb-6 table-shadow">
+        <form action="#" method="get" class="flex flex-col md:flex-row gap-4">
+            <div class="flex-1">
+                <label for="applicantNameFilter" class="block text-sm font-medium text-neutral mb-1">申请者名称</label>
+                <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral">
+                            <i class="fa fa-user"></i>
+                        </span>
+                    <input type="text" id="applicantNameFilter" name="applicantNameFilter"
+                           th:value="${applicantNameFilter}"
+                           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all">
+                </div>
+            </div>
 
-<table border="1" cellspacing="0" cellpadding="10">
-    <thead>
-    <tr>
-        <th>申请者名称</th>
-        <th>申请者邮箱</th>
-        <th>岗位名称</th>
-        <th>公司名称</th>
-        <th>申请时间</th>
-        <th>申请状态</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="item : ${jobapplyList}">
-        <td th:text="${item.applicantName}"></td>
-        <td th:text="${item.applicantEmail}"></td>
-        <td th:text="${item.jobName}"></td>
-        <td th:text="${item.companyName}"></td>
-        <td th:text="${#dates.format(item.applyDate, 'yyyy-MM-dd HH:mm')}"></td>
-        <td th:text="${item.applyState == 1 ? '待审核' : '已处理'}"></td>
-    </tr>
-    </tbody>
-</table>
+            <div class="flex-1">
+                <label for="jobNameFilter" class="block text-sm font-medium text-neutral mb-1">岗位名称</label>
+                <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral">
+                            <i class="fa fa-briefcase"></i>
+                        </span>
+                    <input type="text" id="jobNameFilter" name="jobNameFilter"
+                           th:value="${jobNameFilter}"
+                           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all">
+                </div>
+            </div>
 
-<div th:if="${page != null}">
-    <div>当前页: <span th:text="${page.current}"></span> / <span th:text="${page.pages}"></span></div>
-    <div>
-        <a th:href="@{/job/application/list(page=${page.current - 1}, size=${page.size}, applicantNameFilter=${applicantNameFilter}, jobNameFilter=${jobNameFilter})}" th:if="${page.current > 1}">上一页</a>
-        <a th:href="@{/job/application/list(page=${page.current + 1}, size=${page.size}, applicantNameFilter=${applicantNameFilter}, jobNameFilter=${jobNameFilter})}" th:if="${page.current < page.pages}">下一页</a>
+            <div class="flex items-end">
+                <button type="submit" class="w-full md:w-auto bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg font-medium btn-hover flex items-center justify-center">
+                    <i class="fa fa-search mr-2"></i>
+                    搜索
+                </button>
+                <a th:href="@{/job/application/list}" class="ml-3 w-full md:w-auto bg-gray-200 hover:bg-gray-300 text-neutral-dark px-6 py-2 rounded-lg font-medium btn-hover flex items-center justify-center">
+                    <i class="fa fa-refresh mr-2"></i>
+                    重置
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- 表格 -->
+    <div class="bg-white rounded-xl overflow-hidden table-shadow mb-6">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                <tr class="bg-gray-50 text-left text-neutral-dark">
+                    <th class="px-6 py-4 font-semibold">申请者名称</th>
+                    <th class="px-6 py-4 font-semibold">申请者邮箱</th>
+                    <th class="px-6 py-4 font-semibold">岗位名称</th>
+                    <th class="px-6 py-4 font-semibold">公司名称</th>
+                    <th class="px-6 py-4 font-semibold">申请时间</th>
+                    <th class="px-6 py-4 font-semibold">申请状态</th>
+                    <th class="px-6 py-4 font-semibold text-right">操作</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                <tr th:each="item : ${jobapplyList}" class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 font-medium">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-3">
+                                <i class="fa fa-user"></i>
+                            </div>
+                            <span th:text="${item.applicantName}"></span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-neutral">
+                        <div class="flex items-center">
+                            <i class="fa fa-envelope-o mr-2 text-primary/70"></i>
+                            <span th:text="${item.applicantEmail}"></span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 font-medium">
+                        <span th:text="${item.jobName}"></span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span th:text="${item.companyName}"></span>
+                    </td>
+                    <td class="px-6 py-4 text-neutral">
+                        <i class="fa fa-calendar-o mr-2 text-primary/70"></i>
+                        <span th:text="${#dates.format(item.applyDate, 'yyyy-MM-dd HH:mm')}"></span>
+                    </td>
+                    <td class="px-6 py-4">
+                                <span class="status-pill"
+                                      th:classappend="${item.applyState == 1 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}"
+                                      th:text="${item.applyState == 1 ? '待审核' : '已处理'}">
+                                </span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <button class="bg-primary/10 hover:bg-primary/20 text-primary px-4 py-1.5 rounded-lg text-sm font-medium transition-colors">
+                            <i class="fa fa-eye mr-1"></i> 查看详情
+                        </button>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(jobapplyList)}">
+                    <td colspan="7" class="px-6 py-12 text-center text-neutral">
+                        <div class="flex flex-col items-center">
+                            <i class="fa fa-inbox text-4xl text-gray-300 mb-3"></i>
+                            <p>暂无职位申请数据</p>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 分页 -->
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4" th:if="${page != null}">
+        <div class="text-neutral text-sm">
+            显示第 <span class="font-medium text-neutral-dark" th:text="${(page.current-1)*page.size + 1}"></span>
+            至 <span class="font-medium text-neutral-dark" th:text="${(page.current-1)*page.size + #lists.size(jobapplyList)}"></span>
+            条，共 <span class="font-medium text-neutral-dark" th:text="${page.total}"></span> 条
+        </div>
+
+        <div class="flex items-center">
+            <a th:href="@{/job/application/list(page=${1}, size=${page.size}, applicantNameFilter=${applicantNameFilter}, jobNameFilter=${jobNameFilter})}"
+               class="px-3 py-2 rounded-l-lg border border-gray-300 bg-white text-neutral hover:bg-gray-50 transition-colors"
+               th:classappend="${page.current <= 1 ? 'opacity-50 cursor-not-allowed' : ''}"
+               th:disabled="${page.current <= 1}">
+                <i class="fa fa-angle-double-left"></i>
+            </a>
+
+            <a th:href="@{/job/application/list(page=${page.current - 1}, size=${page.size}, applicantNameFilter=${applicantNameFilter}, jobNameFilter=${jobNameFilter})}"
+               class="px-3 py-2 border-t border-b border-gray-300 bg-white text-neutral hover:bg-gray-50 transition-colors"
+               th:classappend="${page.current <= 1 ? 'opacity-50 cursor-not-allowed' : ''}"
+               th:disabled="${page.current <= 1}">
+                <i class="fa fa-angle-left"></i>
+            </a>
+
+            <span th:each="i : ${#numbers.sequence(1, page.pages)}"
+                  th:if="${i <= 3 || i >= page.pages - 2 || (i >= page.current - 1 && i <= page.current + 1)}">
+                    <a th:href="@{/job/application/list(page=${i}, size=${page.size}, applicantNameFilter=${applicantNameFilter}, jobNameFilter=${jobNameFilter})}"
+                       class="px-4 py-2 border-t border-b border-gray-300 bg-white text-neutral hover:bg-gray-50 transition-colors"
+                       th:classappend="${i == page.current ? 'bg-primary text-white border-primary' : ''}">
+                        <span th:text="${i}"></span>
+                    </a>
+                </span>
+
+            <span th:if="${page.current > 4 && page.current < page.pages - 3}">
+                    <span class="px-4 py-2 border-t border-b border-gray-300 bg-white text-neutral">...</span>
+                </span>
+
+            <a th:href="@{/job/application/list(page=${page.current + 1}, size=${page.size}, applicantNameFilter=${applicantNameFilter}, jobNameFilter=${jobNameFilter})}"
+               class="px-3 py-2 border-t border-b border-gray-300 bg-white text-neutral hover:bg-gray-50 transition-colors"
+               th:classappend="${page.current >= page.pages ? 'opacity-50 cursor-not-allowed' : ''}"
+               th:disabled="${page.current >= page.pages}">
+                <i class="fa fa-angle-right"></i>
+            </a>
+
+            <a th:href="@{/job/application/list(page=${page.pages}, size=${page.size}, applicantNameFilter=${applicantNameFilter}, jobNameFilter=${jobNameFilter})}"
+               class="px-3 py-2 rounded-r-lg border border-gray-300 bg-white text-neutral hover:bg-gray-50 transition-colors"
+               th:classappend="${page.current >= page.pages ? 'opacity-50 cursor-not-allowed' : ''}"
+               th:disabled="${page.current >= page.pages}">
+                <i class="fa fa-angle-double-right"></i>
+            </a>
+        </div>
     </div>
 </div>
 
+<!-- 交互脚本 -->
+<script>
+    // 搜索框回车提交
+    document.getElementById('applicantNameFilter').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            this.form.submit();
+        }
+    });
+
+    document.getElementById('jobNameFilter').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            this.form.submit();
+        }
+    });
+
+    // 表格行悬停效果增强
+    document.querySelectorAll('tbody tr').forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.classList.add('shadow-sm');
+            this.style.transform = 'translateY(-1px)';
+            this.style.transition = 'all 0.2s ease';
+        });
+
+        row.addEventListener('mouseleave', function() {
+            this.classList.remove('shadow-sm');
+            this.style.transform = 'translateY(0)';
+        });
+    });
+</script>
 </body>
 </html>

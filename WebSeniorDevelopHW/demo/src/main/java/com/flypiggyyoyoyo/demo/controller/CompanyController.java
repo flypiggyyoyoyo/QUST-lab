@@ -5,12 +5,14 @@ import com.flypiggyyoyoyo.demo.data.company.register.CompanyRegisterRequest;
 import com.flypiggyyoyoyo.demo.data.company.update.CompanyUpdateRequest;
 import com.flypiggyyoyoyo.demo.model.TbCompany;
 import com.flypiggyyoyoyo.demo.service.TbCompanyService;
+import com.flypiggyyoyoyo.demo.service.TbJobService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
 
@@ -20,6 +22,9 @@ import javax.validation.Valid;
 public class CompanyController {
     @Autowired
     private TbCompanyService companyService;
+
+    @Autowired
+    private TbJobService jobService;
 
     // 添加企业
     @PostMapping("/register")
@@ -72,6 +77,13 @@ public class CompanyController {
     @PostMapping("/update")
     public String updateCompany(@ModelAttribute CompanyUpdateRequest req) {
         companyService.updateCompany(req);
+        return "redirect:/company/list";
+    }
+
+    @GetMapping("/job/deleteInvalid")
+    public String deleteInvalidJobs(RedirectAttributes attributes) {
+        int count = jobService.deleteInvalidJobs();
+        attributes.addFlashAttribute("message", "已删除 " + count + " 个无效职位");
         return "redirect:/company/list";
     }
 }
