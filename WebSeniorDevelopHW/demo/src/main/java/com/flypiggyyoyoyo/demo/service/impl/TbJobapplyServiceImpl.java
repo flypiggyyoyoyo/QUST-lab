@@ -1,5 +1,8 @@
 package com.flypiggyyoyoyo.demo.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.flypiggyyoyoyo.demo.model.TbJobapply;
 import com.flypiggyyoyoyo.demo.service.TbJobapplyService;
@@ -15,6 +18,11 @@ import org.springframework.stereotype.Service;
 public class TbJobapplyServiceImpl extends ServiceImpl<TbJobapplyMapper, TbJobapply>
     implements TbJobapplyService{
 
+    @Override
+    public IPage<TbJobapply> getApplicationPage(int page, int size, QueryWrapper<TbJobapply> wrapper) {
+        Page<TbJobapply> pageObj = new Page<>(page, size);
+        return this.page(pageObj, wrapper);
+    }
 }
 
 

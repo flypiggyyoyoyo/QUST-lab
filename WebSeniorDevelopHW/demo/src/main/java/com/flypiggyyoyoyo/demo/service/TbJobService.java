@@ -6,6 +6,8 @@ import com.flypiggyyoyoyo.demo.model.TbJob;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.util.List;
+
 /**
 * @author flypiggy
 * @description 针对表【tb_job】的数据库操作Service
@@ -20,4 +22,6 @@ public interface TbJobService extends IService<TbJob> {
     public boolean deleteJobById(Long id);
 
     boolean updateJob(TbJob job);
+
+    List<TbJob> getAllJobs();
 }

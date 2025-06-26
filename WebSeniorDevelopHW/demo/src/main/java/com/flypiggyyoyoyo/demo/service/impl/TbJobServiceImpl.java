@@ -10,6 +10,8 @@ import com.flypiggyyoyoyo.demo.mapper.TbJobMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
+
 /**
 * @author flypiggy
 * @description 针对表【tb_job】的数据库操作Service实现
@@ -37,6 +39,11 @@ public class TbJobServiceImpl extends ServiceImpl<TbJobMapper, TbJob>
     @Override
     public boolean updateJob(TbJob job) {
         return this.updateById(job);
+    }
+
+    @Override
+    public List<TbJob> getAllJobs() {
+        return this.list();
     }
 }
 

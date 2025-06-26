@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.flypiggyyoyoyo.demo.model.TbCompany;
 import com.flypiggyyoyoyo.demo.model.TbJob;
+import com.flypiggyyoyoyo.demo.model.TbJobapply;
 import com.flypiggyyoyoyo.demo.service.TbCompanyService;
 import com.flypiggyyoyoyo.demo.service.TbJobService;
+import com.flypiggyyoyoyo.demo.service.TbJobapplyService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -26,7 +28,10 @@ public class JobController {
     private TbJobService jobService;
 
     @Autowired
-    private TbCompanyService companyService; // 新增：用于获取公司列表
+    private TbCompanyService companyService;
+
+    @Autowired
+    private TbJobapplyService jobApplicationService;
 
     @GetMapping("/list")
     public String list(
@@ -137,5 +142,12 @@ public class JobController {
             redirectAttrs.addFlashAttribute("errorMessage", "更新失败");
         }
         return "redirect:/job/list";
+    }
+
+    @GetMapping("/application/list")
+    public String listJobApplications(Model model) {
+        List<TbJobapply> jobapplyList = jobApplicationService.list();
+        model.addAttribute("jobapplyList", jobapplyList);
+        return "manage/jobApplyList"; // 这里是 jobApplyList.html
     }
 }
