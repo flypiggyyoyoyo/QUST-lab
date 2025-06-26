@@ -2,155 +2,469 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="utf-8">
-  <title>企业列表</title>
+  <title>用户列表</title>
   <link th:href="@{/css/manageadmin.css}" rel="stylesheet" type="text/css" />
   <script th:src="@{/js/jquery.js}"></script>
+
   <style>
-    .search-container { display: flex; gap: 10px; align-items: center; }
-    .filter-select { padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; }
-    .search-input { padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; width: 200px; }
-    .search-btn { padding: 6px 15px; background-color: #4285f4; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    :root {
+      --primary-color: #4a6cf7;
+      --secondary-color: #f5f7ff;
+      --success-color: #36d399;
+      --warning-color: #fbbd23;
+      --danger-color: #f87272;
+      --text-color: #1f2937;
+      --text-light: #6b7280;
+      --border-color: #e5e7eb;
+      --bg-color: #ffffff;
+      --bg-light: #f9fafb;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f3f4f6;
+      color: var(--text-color);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    h1 {
+      color: var(--primary-color);
+      font-size: 24px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #3b5cf6;
+    }
+
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: #ef4444;
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+
+    .search-container {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .search-input, .filter-select {
+      padding: 8px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      flex: 1;
+    }
+
+    .filter-select {
+      max-width: 200px;
+    }
+
+    .table-container {
+      background-color: var(--bg-color);
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background-color: var(--secondary-color);
+      color: var(--text-color);
+      font-weight: 600;
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    td {
+      padding: 12px 15px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    tr:hover {
+      background-color: var(--bg-light);
+    }
+
+    .role-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: white;
+    }
+
+    .role-admin {
+      background-color: var(--primary-color);
+    }
+
+    .role-hr {
+      background-color: var(--success-color);
+    }
+
+    .role-user {
+      background-color: var(--warning-color);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-active {
+      background-color: #d1fae5;
+      color: #10b981;
+    }
+
+    .status-inactive {
+      background-color: #fee2e2;
+      color: #ef4444;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 20px;
+      gap: 5px;
+    }
+
+    .page-btn {
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      cursor: pointer;
+      background-color: white;
+      transition: all 0.2s ease;
+    }
+
+    .page-btn:hover, .page-btn.active {
+      background-color: var(--secondary-color);
+      border-color: var(--primary-color);
+    }
+
+    .page-btn.active {
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    .page-btn.disabled {
+      color: #aaa;
+      pointer-events: none;
+      border-color: #eee;
+      background-color: #f9fafb;
+    }
+
+    .empty-state {
+      padding: 30px;
+      text-align: center;
+      color: var(--text-light);
+      font-size: 14px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      font-size: 12px;
+    }
+
+    .table-link {
+      color: var(--primary-color);
+      text-decoration: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .table-link:hover {
+      background-color: var(--secondary-color);
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 15px;
+      }
+
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+
+      .search-container {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-input, .filter-select {
+        width: 100%;
+        max-width: none;
+      }
+    }
   </style>
 </head>
-<body class="bg-f0f9fd font-sans">
-<div class="place"> <span>位置：</span>
-  <ul class="placeul">
-    <li><a href="#">首页</a></li>
-    <li><a href="#">用户列表</a></li>
-  </ul>
-</div>
-<div class="rightinfo">
-  <div class="tools">
-    <ul class="toolbar">
-      <li class="click"><span><img th:src="@{/images/t01.png}" /></span><a th:href="@{/user/add}" target="rightFrame">添加</a></li>
-      <li class="click"><span><img th:src="@{/images/t02.png}" /></span><a href="userAdd.html" target="rightFrame">修改</a></li>
-      <li><span><img th:src="@{/images/t03.png}" /></span><a href="userDelete.html" target="rightFrame">删除</a></li>
+
+<body>
+<div class="container">
+  <!-- 位置导航 -->
+  <div class="place">
+    <span>位置：</span>
+    <ul class="placeul">
+      <li><a th:href="@{/}">首页</a></li>
+      <li>用户列表</li>
     </ul>
-
-    <form th:action="@{/user/lists}" method="get" class="search-container">
-      <select class="filter-select" name="role"
-              th:value="${currentRole}">
-        <option value="">所有角色</option>
-        <option value="admin">系统管理员</option>
-        <option value="hr">人力资源</option>
-        <option value="user">普通用户</option>
-      </select>
-
-      <input type="text"
-             class="search-input"
-             name="keyword"
-             placeholder="请输入用户名"
-             th:value="${currentKeyword}" />
-
-      <button type="submit" class="search-btn">搜索</button>
-    </form>
   </div>
 
-  <table class="imgtable">
-    <thead>
-    <tr>
-      <th><input name="" type="checkbox" value="" checked="checked"/></th>
-      <th>用户登录名</th>
-      <th>用户真实姓名</th>
-      <th>用户Email</th>
-      <th>用户角色</th>
-      <th>用户状态</th>
-      <th>操作</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="user : ${users}" height="50px">
-      <td>
-        <input type="checkbox"
-               th:value="${user.userId}"
-               name="userIds" />
-      </td>
-      <td th:text="${user.userLogname}">登录名</td>
-      <td th:text="${user.userRealname}">真实姓名</td>
-      <td th:text="${user.userEmail}">Email</td>
-      <td th:switch="${user.userRole}">
-        <span th:case="'admin'">系统管理员</span>
-        <span th:case="'hr'">人力资源</span>
-        <span th:case="'user'">普通用户</span>
-        <span th:case="*">未知</span>
-      </td>
-      <td th:text="${user.userState == 1} ? '启用' : '禁用'">状态</td>
-      <td>
-        <a th:href="@{/user/edit(userId=${user.userId})}" class="tablelink">修改</a>
-        &nbsp;&nbsp;
-        <a href="#" class="tablelink"
-           th:onclick="'return confirmDelete(' + ${user.userId} + ');'">
-          删除
-        </a>
-      </td>
-
-    </tr>
-    <tr th:if="${#lists.isEmpty(users)}">
-      <td colspan="7" style="text-align: center; color: #999;">
-        暂无用户
-      </td>
-    </tr>
-    </tbody>
-
-
-  </table>
-
-  <div class="pagin">
-    <div class="message">
-      共 <i class="blue" th:text="${userPage.pages}"></i> 页，
-      当前第 <i class="blue" th:text="${userPage.current}"></i> 页，
-      总记录数 <i class="blue" th:text="${userPage.total}"></i> 条
+  <header>
+    <h1>用户管理</h1>
+    <div class="actions">
+      <a th:href="@{/user/add}" class="btn btn-primary">
+        <span><img th:src="@{/images/t01.png}" alt="添加" style="margin-right: 5px; vertical-align: middle;" /></span>
+        添加
+      </a>
+      <a href="javascript:void(0);" onclick="batchUpdateUsers('delete')" class="btn btn-danger">
+        <span><img th:src="@{/images/t03.png}" alt="删除" style="margin-right: 5px; vertical-align: middle;" /></span>
+        删除
+      </a>
     </div>
-    <ul class="paginList">
-      <!-- 跳转首页 -->
+  </header>
+
+  <!-- 搜索/过滤表单 -->
+  <form th:action="@{/user/lists}" method="get" class="search-container">
+    <select class="filter-select" name="role" th:value="${currentRole}">
+      <option value="">所有角色</option>
+      <option value="admin">系统管理员</option>
+      <option value="hr">人力资源</option>
+      <option value="user">普通用户</option>
+    </select>
+
+    <input type="text" class="search-input" name="keyword"
+           placeholder="请输入用户名" th:value="${currentKeyword}" />
+    <button type="submit" class="btn btn-primary">搜索</button>
+    <a th:href="@{/user/lists}" class="btn btn-secondary">重置</a>
+  </form>
+
+  <!-- 用户列表表格 -->
+  <div class="table-container">
+    <table>
+      <thead>
+      <tr>
+        <th><input type="checkbox" onclick="selectAll(this)" /></th>
+        <th>用户登录名</th>
+        <th>用户真实姓名</th>
+        <th>用户Email</th>
+        <th>用户角色</th>
+        <th>用户状态</th>
+        <th>操作</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="user : ${users}" height="50px">
+        <td><input type="checkbox" name="userIds" th:value="${user.userId}" /></td>
+        <td th:text="${user.userLogname}">登录名</td>
+        <td th:text="${user.userRealname}">真实姓名</td>
+        <td th:text="${user.userEmail}">Email</td>
+        <td>
+                        <span class="role-badge" th:classappend="${user.userRole == 'admin' ? 'role-admin' : (user.userRole == 'hr' ? 'role-hr' : 'role-user')}"
+                              th:text="${user.userRole == 'admin' ? '系统管理员' : (user.userRole == 'hr' ? '人力资源' : '普通用户')}">角色</span>
+        </td>
+        <td>
+                        <span class="status-badge" th:classappend="${user.userState == 1 ? 'status-active' : 'status-inactive'}"
+                              th:text="${user.userState == 1 ? '启用' : '禁用'}">状态</span>
+        </td>
+        <td>
+          <div class="action-buttons">
+            <a th:href="@{/user/edit(userId=${user.userId})}" class="table-link">修改</a>
+            <a href="javascript:void(0);" onclick="deleteUser(${user.userId})" class="table-link">删除</a>
+          </div>
+        </td>
+      </tr>
+      <tr th:if="${#lists.isEmpty(users)}">
+        <td colspan="7" class="empty-state">暂无用户</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 分页 - 增加null检查 -->
+  <div class="pagination" th:if="${page != null}">
+    <div class="message" style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">
+      共 <span style="color: var(--primary-color); font-weight: 500;" th:text="${page.pages}">0</span> 页，
+      当前第 <span style="color: var(--primary-color); font-weight: 500;" th:text="${page.current}">1</span> 页，
+      总记录数 <span style="color: var(--primary-color); font-weight: 500;" th:text="${page.total}">0</span> 条
+    </div>
+    <ul class="paginList" style="list-style: none; display: flex; gap: 5px; padding: 0;">
       <li class="paginItem">
-        <a th:href="@{/user/lists(pageNum=1, pageSize=${userPage.size}, role=${currentRole}, keyword=${currentKeyword})}">首页</a>
+        <a th:href="@{/user/lists(pageNum=1, pageSize=${page.size}, role=${currentRole}, keyword=${currentKeyword})}"
+           class="page-btn" th:classappend="${page.current == 1} ? 'disabled' : ''">
+          首页
+        </a>
       </li>
-      <!-- 上一页 -->
-      <li class="paginItem" th:if="${userPage.hasPrevious()}">
-        <a th:href="@{/user/lists(pageNum=${userPage.current-1}, pageSize=${userPage.size}, role=${currentRole}, keyword=${currentKeyword})}">
+      <li class="paginItem" th:if="${page.hasPrevious}">
+        <a th:href="@{/user/lists(pageNum=${page.current-1}, pageSize=${page.size}, role=${currentRole}, keyword=${currentKeyword})}"
+           class="page-btn">
           上一页
         </a>
       </li>
-      <!-- 下一页 -->
-      <li class="paginItem" th:if="${userPage.hasNext()}">
-        <a th:href="@{/user/lists(pageNum=${userPage.current+1}, pageSize=${userPage.size}, role=${currentRole}, keyword=${currentKeyword})}">
+
+      <!-- 动态生成页码 - 增加页码范围控制 -->
+      <th:block th:if="${page.pages > 0}">
+        <th:block th:each="i : ${#numbers.sequence(1, page.pages)}">
+          <li class="paginItem" th:if="${i <= 5 || i >= page.pages - 4 || (i >= page.current - 2 && i <= page.current + 2)}">
+            <a th:href="@{/user/lists(pageNum=${i}, pageSize=${page.size}, role=${currentRole}, keyword=${currentKeyword})}"
+               class="page-btn" th:classappend="${i == page.current} ? 'active' : ''"
+               th:text="${i}">1</a>
+          </li>
+          <li class="paginItem" th:if="${i == 6 && page.current > 5}">
+            <span class="page-btn disabled">...</span>
+          </li>
+          <li class="paginItem" th:if="${i == page.pages - 5 && page.current < page.pages - 4}">
+            <span class="page-btn disabled">...</span>
+          </li>
+        </th:block>
+      </th:block>
+
+      <li class="paginItem" th:if="${page.hasNext}">
+        <a th:href="@{/user/lists(pageNum=${page.current+1}, pageSize=${page.size}, role=${currentRole}, keyword=${currentKeyword})}"
+           class="page-btn">
           下一页
         </a>
       </li>
-      <!-- 跳转尾页 -->
       <li class="paginItem">
-        <a th:href="@{/user/lists(pageNum=${userPage.pages}, pageSize=${userPage.size}, role=${currentRole}, keyword=${currentKeyword})}">尾页</a>
+        <a th:href="@{/user/lists(pageNum=${page.pages}, pageSize=${page.size}, role=${currentRole}, keyword=${currentKeyword})}"
+           class="page-btn" th:classappend="${page.current == page.pages} ? 'disabled' : ''">
+          尾页
+        </a>
       </li>
     </ul>
   </div>
-
+  <div class="pagination" th:unless="${page != null}">
+    <div class="message" style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">
+      共 0 页，当前第 1 页，总记录数 0 条
+    </div>
+  </div>
 </div>
 
 <script>
-  $(function() {
-    // 搜索功能
-    $("#searchBtn").click(function() {
-      const searchText = $("#userSearch").val();
-      const roleFilter = $("#roleFilter").val();
-      // 这里可以添加搜索逻辑，例如发送AJAX请求
-      console.log("搜索关键词:", searchText);
-      console.log("角色筛选:", roleFilter);
-    });
+  // 全选/反选
+  function selectAll(checkbox) {
+    document.querySelectorAll('input[name="userIds"]').forEach(cb => cb.checked = checkbox.checked);
+  }
 
-    // 回车搜索
-    $("#userSearch").keypress(function(e) {
-      if (e.which === 13) {
-        $("#searchBtn").click();
+  // 删除单个用户
+  function deleteUser(userId) {
+    if (confirm('确定删除该用户吗？')) {
+      window.location.href = '/user/delete?userId=' + userId;
+    }
+  }
+
+  // 批量操作（修改/删除）
+  function batchUpdateUsers(action) {
+    const checkboxes = document.querySelectorAll('input[name="userIds"]:checked');
+    const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+
+    if (selectedIds.length === 0) {
+      alert("请选择要操作的用户");
+      return;
+    }
+
+    let confirmMsg = action === 'edit' ? '确定修改选中的 ' + selectedIds.length + ' 个用户吗？' :
+            '确定删除选中的 ' + selectedIds.length + ' 个用户吗？';
+
+    if (confirm(confirmMsg)) {
+      if (action === 'edit') {
+        if (selectedIds.length > 1) {
+          alert("一次只能修改一个用户");
+          return;
+        }
+        window.location.href = '/user/edit?userId=' + selectedIds[0];
+      } else {
+        const form = document.createElement('form');
+        form.method = 'post';
+        form.action = '/user/delete';
+
+        selectedIds.forEach(id => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = 'userIds';
+          input.value = id;
+          form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
       }
-    });
+    }
+  }
 
-    // 角色筛选
-    $("#roleFilter").change(function() {
-      const role = $(this).val();
-      // 这里可以添加筛选表格的逻辑
-      console.log("筛选角色:", role);
-    });
+  // 回车搜索
+  document.querySelector('input[name="keyword"]').addEventListener('keypress', function(e) {
+    if (e.which === 13) {
+      this.closest('form').submit();
+    }
   });
 </script>
 </body>

@@ -1,118 +1,372 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="utf-8">
   <title>企业列表</title>
   <link th:href="@{/css/manageadmin.css}" rel="stylesheet" type="text/css" />
   <script th:src="@{/js/jquery.js}"></script>
+
   <style>
-    .search-container { display: flex; gap: 10px; align-items: center; }
-    .filter-select { padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; }
-    .search-input { padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; width: 200px; }
-    .search-btn { padding: 6px 15px; background-color: #4285f4; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    :root {
+      --primary-color: #4a6cf7;
+      --secondary-color: #f5f7ff;
+      --success-color: #36d399;
+      --warning-color: #fbbd23;
+      --danger-color: #f87272;
+      --text-color: #1f2937;
+      --text-light: #6b7280;
+      --border-color: #e5e7eb;
+      --bg-color: #ffffff;
+      --bg-light: #f9fafb;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f3f4f6;
+      color: var(--text-color);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    h1 {
+      color: var(--primary-color);
+      font-size: 24px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #3b5cf6;
+    }
+
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: #ef4444;
+    }
+
+    .search-container {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .search-input, .filter-select {
+      padding: 8px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      flex: 1;
+    }
+
+    .filter-select {
+      max-width: 200px;
+    }
+
+    .table-container {
+      background-color: var(--bg-color);
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background-color: var(--secondary-color);
+      color: var(--text-color);
+      font-weight: 600;
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    td {
+      padding: 12px 15px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    tr:hover {
+      background-color: var(--bg-light);
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-right: 5px;
+    }
+
+    .status-active {
+      background-color: #d1fae5;
+      color: #10b981;
+    }
+
+    .status-inactive {
+      background-color: #fee2e2;
+      color: #ef4444;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 20px;
+      gap: 5px;
+    }
+
+    .page-btn {
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      cursor: pointer;
+      background-color: white;
+      transition: all 0.2s ease;
+    }
+
+    .page-btn:hover, .page-btn.active {
+      background-color: var(--secondary-color);
+      border-color: var(--primary-color);
+    }
+
+    .page-btn.active {
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    .page-btn.disabled {
+      color: #aaa;
+      pointer-events: none;
+      border-color: #eee;
+      background-color: #f9fafb;
+    }
+
+    .empty-state {
+      padding: 30px;
+      text-align: center;
+      color: var(--text-light);
+      font-size: 14px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      font-size: 12px;
+    }
+
+    .table-link {
+      color: var(--primary-color);
+      text-decoration: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .table-link:hover {
+      background-color: var(--secondary-color);
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 15px;
+      }
+
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+
+      .search-container {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-input, .filter-select {
+        width: 100%;
+        max-width: none;
+      }
+    }
   </style>
 </head>
-<body class="bg-f0f9fd font-sans">
-<div class="place"> <span>位置：</span>
-  <ul class="placeul">
-    <li><a href="#">首页</a></li>
-    <li><a href="#">企业列表</a></li>
-  </ul>
-</div>
-<div class="rightinfo">
-  <div class="tools">
-    <ul class="toolbar">
-      <li class="click"><span><img th:src="@{/images/t01.png}" /></span><a th:href="@{/company/add}" target="rightFrame">添加</a></li>
-      <li><span><img th:src="@{/images/t03.png}" /></span><a href="companyDelete.html" target="rightFrame">删除</a></li>
+
+<body>
+<div class="container">
+  <!-- 位置导航 -->
+  <div class="place">
+    <span>位置：</span>
+    <ul class="placeul">
+      <li><a th:href="@{/}">首页</a></li>
+      <li>企业列表</li>
     </ul>
-
-    <!-- 企业筛选下拉框 -->
-    <div class="search-container">
-      <select class="filter-select" id="companyFilter">
-        <option value="">所有企业</option>
-        <option value="大型企业" th:selected="${size == '大型企业'}">大型企业(1000人以上)</option>
-        <option value="中型企业" th:selected="${size == '中型企业'}">中型企业(100-1000人)</option>
-        <option value="小型企业" th:selected="${size == '小型企业'}">小型企业(100人以下)</option>
-      </select>
-
-      <!-- 企业查询输入框 -->
-      <input type="text" class="search-input" id="companySearch" th:value="${name}" placeholder="请输入企业名称">
-      <button class="search-btn" id="searchBtn">搜索</button>
-    </div>
   </div>
 
-  <!-- 企业列表表格 -->
-  <table class="imgtable">
-    <thead>
-    <tr>
-      <th><input name="" type="checkbox" value="" checked="checked"/></th>
-      <th>企业名称</th>
-      <th>企业所在地</th>
-      <th>企业规模</th>
-      <th>企业性质</th>
-      <th>招聘状态</th>
-      <th>显示排序</th>
-      <th>浏览数</th>
-      <th>操作</th>
-    </tr>
-    </thead>
-    <tbody th:if="${not #lists.isEmpty(companyList)}">
-    <tr th:each="company : ${companyList}" height="50px">
-      <td><input name="" type="checkbox" value="" /></td>
-      <td th:text="${company.companyName}">企业名称</td>
-      <td th:text="${company.companyArea}">所在地</td>
-      <td th:text="${company.companySize}">企业规模</td>
-      <td th:text="${company.companyType}">企业性质</td>
-      <td>
-        <span th:if="${company.companyState == 1}" class="text-green">招聘中</span>
-        <span th:if="${company.companyState != 1}" class="text-gray">暂停招聘</span>
-      </td>
-      <td th:text="${company.companySort}">排序</td>
-      <td th:text="${company.companyViewnum}">浏览数</td>
-      <td>
-        <a th:href="@{/company/edit(companyId=${company.companyId})}" class="tablelink">修改</a>
-        &nbsp;&nbsp;
-        <a href="javascript:void(0);" onclick="deleteCompany(${company.companyId})" class="tablelink">删除</a>
-      </td>
-    </tr>
-    </tbody>
-    <tbody th:unless="${not #lists.isEmpty(companyList)}">
-    <tr>
-      <td colspan="9" style="text-align:center;">暂无企业数据</td>
-    </tr>
-    </tbody>
-  </table>
-
-  <!-- 分页组件 -->
-  <div class="pagin">
-    <div class="message">
-      共<i class="blue" th:text="${totalCount}">0</i>条记录，
-      当前显示第&nbsp;<i class="blue" th:text="${currentPage}">1&nbsp;</i>页
+  <header>
+    <h1>企业管理</h1>
+    <div class="actions">
+      <a th:href="@{/company/add}" class="btn btn-primary">
+        <span><img th:src="@{/images/t01.png}" alt="添加" style="margin-right: 5px; vertical-align: middle;" /></span>
+        添加
+      </a>
+      <a href="javascript:void(0);" onclick="deleteSelectedCompanies()" class="btn btn-danger">
+        <span><img th:src="@{/images/t03.png}" alt="删除" style="margin-right: 5px; vertical-align: middle;" /></span>
+        删除
+      </a>
     </div>
-    <ul class="paginList">
+  </header>
+
+  <!-- 搜索/过滤表单 -->
+  <form th:action="@{/company/list}" method="get" class="search-container">
+    <select class="filter-select" id="companyFilter" name="size">
+      <option value="">所有企业</option>
+      <option value="大型企业" th:selected="${size == '大型企业'}">大型企业(1000人以上)</option>
+      <option value="中型企业" th:selected="${size == '中型企业'}">中型企业(100-1000人)</option>
+      <option value="小型企业" th:selected="${size == '小型企业'}">小型企业(100人以下)</option>
+    </select>
+
+    <input type="text" class="search-input" id="companySearch" name="name"
+           th:value="${name}" placeholder="请输入企业名称">
+    <button type="submit" class="btn btn-primary">搜索</button>
+    <a th:href="@{/company/list}" class="btn" style="background:#6c757d; color:white;">重置</a>
+  </form>
+
+  <!-- 企业列表表格 -->
+  <div class="table-container">
+    <table>
+      <thead>
+      <tr>
+        <th><input type="checkbox" onclick="toggleAll(this)" /></th>
+        <th>企业名称</th>
+        <th>企业所在地</th>
+        <th>企业规模</th>
+        <th>企业性质</th>
+        <th>招聘状态</th>
+        <th>显示排序</th>
+        <th>浏览数</th>
+        <th>操作</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="company : ${companyList}" height="50px">
+        <td><input type="checkbox" name="companyIds" th:value="${company.companyId}" /></td>
+        <td th:text="${company.companyName}">企业名称</td>
+        <td th:text="${company.companyArea}">所在地</td>
+        <td th:text="${company.companySize}">企业规模</td>
+        <td th:text="${company.companyType}">企业性质</td>
+        <td>
+                        <span class="status-pill" th:classappend="${company.companyState == 1 ? 'status-active' : 'status-inactive'}">
+                            <span th:text="${company.companyState == 1 ? '招聘中' : '暂停招聘'}"></span>
+                        </span>
+        </td>
+        <td th:text="${company.companySort}">排序</td>
+        <td th:text="${company.companyViewnum}">浏览数</td>
+        <td>
+          <div class="action-buttons">
+            <a th:href="@{/company/edit(companyId=${company.companyId})}" class="table-link">修改</a>
+            <a href="javascript:void(0);" onclick="deleteCompany(${company.companyId})" class="table-link">删除</a>
+          </div>
+        </td>
+      </tr>
+      <tr th:if="${#lists.isEmpty(companyList)}">
+        <td colspan="9" class="empty-state">暂无企业数据</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 分页 -->
+  <div class="pagination">
+    <div class="message" style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">
+      共 <span style="color: var(--primary-color); font-weight: 500;" th:text="${totalCount}">0</span> 条记录，
+      当前显示第 <span style="color: var(--primary-color); font-weight: 500;" th:text="${currentPage}">1</span> 页
+    </div>
+    <ul class="paginList" style="list-style: none; display: flex; gap: 5px; padding: 0;">
       <li class="paginItem">
-        <a th:href="@{/company/list(page=1, name=${name}, size=${size})}" th:if="${currentPage > 1}">
-          <span class="pagepre"></span>
+        <a th:href="@{/company/list(page=1, name=${name}, size=${size})}"
+           class="page-btn" th:classappend="${currentPage > 1 ? '' : 'disabled'}">
+          首页
         </a>
-        <a href="javascript:;" th:unless="${currentPage > 1}">
-          <span class="pagepre" style="opacity:0.5; cursor:not-allowed;"></span>
+      </li>
+      <li class="paginItem">
+        <a th:href="@{/company/list(page=${currentPage-1}, name=${name}, size=${size})}"
+           class="page-btn" th:classappend="${currentPage > 1 ? '' : 'disabled'}">
+          上一页
         </a>
       </li>
 
-      <!-- 动态生成页码，使用Thymeleaf标准语法 -->
-      <th:each="page : ${#numbers.sequence(1, totalPages != null ? totalPages : 1)}">
-      <a th:href="@{/company/list(page=${i}, name=${name}, size=${size})}"
-           th:classappend="${i == currentPage} ? ' current' : ''"
-           th:text="${i}">1</a>
-      </li>
-      <li class="paginItem more" th:if="${totalPages > 5}"><a href="javascript:;">...</a></li>
-      <li class="paginItem" th:if="${totalPages > 0}">
-        <a th:href="@{/company/list(page=${totalPages}, name=${name}, size=${size})}" th:if="${currentPage < totalPages}">
-          <span class="pagenxt"></span>
+      <!-- 动态生成页码 -->
+      <th:block th:each="i : ${#numbers.sequence(1, totalPages != null ? totalPages : 1)}">
+        <li class="paginItem" th:if="${i <= 5 || i >= totalPages - 4 || (i >= currentPage - 2 && i <= currentPage + 2)}">
+          <a th:href="@{/company/list(page=${i}, name=${name}, size=${size})}"
+             class="page-btn" th:classappend="${i == currentPage ? 'active' : ''}"
+             th:text="${i}">1</a>
+        </li>
+        <li class="paginItem" th:if="${i == 6 && currentPage > 5}">
+          <span class="page-btn disabled">...</span>
+        </li>
+        <li class="paginItem" th:if="${i == totalPages - 5 && currentPage < totalPages - 4}">
+          <span class="page-btn disabled">...</span>
+        </li>
+      </th:block>
+
+      <li class="paginItem">
+        <a th:href="@{/company/list(page=${currentPage+1}, name=${name}, size=${size})}"
+           class="page-btn" th:classappend="${currentPage < totalPages ? '' : 'disabled'}">
+          下一页
         </a>
-        <a href="javascript:;" th:unless="${currentPage < totalPages}">
-          <span class="pagenxt" style="opacity:0.5; cursor:not-allowed;"></span>
+      </li>
+      <li class="paginItem">
+        <a th:href="@{/company/list(page=${totalPages}, name=${name}, size=${size})}"
+           class="page-btn" th:classappend="${currentPage < totalPages ? '' : 'disabled'}">
+          尾页
         </a>
       </li>
     </ul>
@@ -120,31 +374,10 @@
 </div>
 
 <script>
-  $(function() {
-    // 搜索功能
-    $("#searchBtn").click(function() {
-      const searchText = $("#companySearch").val();
-      const companyFilter = $("#companyFilter").val();
-      // 跳转到搜索结果页面，携带参数
-      window.location.href = "/company/list?name=" + encodeURIComponent(searchText) +
-              "&size=" + companyFilter;
-    });
-
-    // 回车搜索
-    $("#companySearch").keypress(function(e) {
-      if (e.which === 13) {
-        $("#searchBtn").click();
-      }
-    });
-
-    // 企业规模筛选
-    $("#companyFilter").change(function() {
-      const filter = $(this).val();
-      const searchText = $("#companySearch").val();
-      window.location.href = "/company/list?name=" + encodeURIComponent(searchText) +
-              "&size=" + filter;
-    });
-  });
+  // 全选/反选
+  function toggleAll(src) {
+    document.getElementsByName('companyIds').forEach(cb => cb.checked = src.checked);
+  }
 
   // 删除企业
   function deleteCompany(companyId) {
@@ -152,6 +385,42 @@
       window.location.href = "/company/delete?companyId=" + companyId;
     }
   }
+
+  // 批量删除企业
+  function deleteSelectedCompanies() {
+    const checkboxes = document.querySelectorAll('input[name="companyIds"]:checked');
+    const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+
+    if (selectedIds.length === 0) {
+      alert("请选择要删除的企业");
+      return;
+    }
+
+    if (confirm("确定要删除选中的 " + selectedIds.length + " 个企业吗？")) {
+      // 创建并提交隐藏表单
+      const form = document.createElement('form');
+      form.method = 'post';
+      form.action = '/company/batchDelete';
+
+      selectedIds.forEach(id => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'companyIds';
+        input.value = id;
+        form.appendChild(input);
+      });
+
+      document.body.appendChild(form);
+      form.submit();
+    }
+  }
+
+  // 回车搜索
+  $("#companySearch").keypress(function(e) {
+    if (e.which === 13) {
+      $(this).closest('form').submit();
+    }
+  });
 </script>
 </body>
 </html>
