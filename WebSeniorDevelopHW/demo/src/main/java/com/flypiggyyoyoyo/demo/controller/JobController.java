@@ -2,9 +2,11 @@ package com.flypiggyyoyoyo.demo.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.flypiggyyoyoyo.demo.model.TbCompany;
 import com.flypiggyyoyoyo.demo.model.TbJob;
 import com.flypiggyyoyoyo.demo.model.TbJobapply;
+import com.flypiggyyoyoyo.demo.model.vo.JobApplyView;
 import com.flypiggyyoyoyo.demo.service.TbCompanyService;
 import com.flypiggyyoyoyo.demo.service.TbJobService;
 import com.flypiggyyoyoyo.demo.service.TbJobapplyService;
@@ -144,10 +146,33 @@ public class JobController {
         return "redirect:/job/list";
     }
 
+//    @GetMapping("/application/list")
+//    public String listJobApplications(Model model) {
+//        List<TbJobapply> jobapplyList = jobApplicationService.list();
+//        model.addAttribute("jobapplyList", jobapplyList);
+//        return "manage/jobApplyList"; // 这里是 jobApplyList.html
+//    }
+
     @GetMapping("/application/list")
-    public String listJobApplications(Model model) {
-        List<TbJobapply> jobapplyList = jobApplicationService.list();
-        model.addAttribute("jobapplyList", jobapplyList);
-        return "manage/jobApplyList"; // 这里是 jobApplyList.html
+    public String listJobApplications(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String applicantNameFilter,
+            @RequestParam(required = false) String jobNameFilter,
+            Model model) {
+
+        // 构建分页参数
+        Page<JobApplyView> jobApplyPage = new Page<>(page, size);
+
+        // 执行分页查询
+        List<JobApplyView> jobApplyViews = jobApplicationService.getJobApplyViews(jobApplyPage, applicantNameFilter, jobNameFilter);
+
+        model.addAttribute("jobapplyList", jobApplyViews);
+        model.addAttribute("page", jobApplyPage);
+        model.addAttribute("applicantNameFilter", applicantNameFilter);
+        model.addAttribute("jobNameFilter", jobNameFilter);
+
+        return "manage/jobApplyList";
     }
+
 }

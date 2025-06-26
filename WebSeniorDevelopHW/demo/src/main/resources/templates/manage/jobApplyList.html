@@ -2,262 +2,50 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>职位申请管理</title>
-    <style>
-        /* 基础样式 */
-        :root {
-            --primary-color: #4a6cf7;
-            --secondary-color: #f5f7ff;
-            --success-color: #36d399;
-            --warning-color: #fbbd23;
-            --danger-color: #f87272;
-            --text-color: #1f2937;
-            --text-light: #6b7280;
-            --border-color: #e5e7eb;
-            --bg-color: #ffffff;
-            --bg-light: #f9fafb;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: #f3f4f6;
-            color: var(--text-color);
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        h1 {
-            color: var(--primary-color);
-            font-size: 24px;
-        }
-
-        .actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #3b5cf6;
-        }
-
-        .search-container {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
-        }
-
-        .search-input {
-            padding: 8px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            flex: 1;
-        }
-
-        .table-container {
-            background-color: var(--bg-color);
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th {
-            background-color: var(--secondary-color);
-            color: var(--text-color);
-            font-weight: 600;
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        td {
-            padding: 12px 15px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        tr:hover {
-            background-color: var(--bg-light);
-        }
-
-        .status-pill {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-            margin-right: 5px;
-        }
-
-        .status-pending {
-            background-color: #e0e7ff;
-            color: #3b82f6;
-        }
-
-        .status-interview {
-            background-color: #d1fae5;
-            color: #10b981;
-        }
-
-        .status-offer {
-            background-color: #fef3c7;
-            color: #d97706;
-        }
-
-        .status-rejected {
-            background-color: #fee2e2;
-            color: #ef4444;
-        }
-
-        .pagination {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 20px;
-            gap: 5px;
-        }
-
-        .page-btn {
-            padding: 8px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            cursor: pointer;
-            background-color: white;
-            transition: all 0.2s ease;
-        }
-
-        .page-btn:hover, .page-btn.active {
-            background-color: var(--secondary-color);
-            border-color: var(--primary-color);
-        }
-
-        .page-btn.active {
-            color: var(--primary-color);
-            font-weight: 600;
-        }
-
-        .empty-state {
-            padding: 30px;
-            text-align: center;
-            color: var(--text-light);
-            font-size: 14px;
-        }
-
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-
-            header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-
-            table {
-                display: block;
-                overflow-x: auto;
-            }
-        }
-    </style>
+    <title>职位申请列表</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
 </head>
 <body>
-<div class="container">
-    <header>
-        <h1>职位申请管理</h1>
-        <div class="actions">
-            <a href="#" class="btn btn-primary">新增申请</a>
-        </div>
-    </header>
+<h2>职位申请列表</h2>
 
-    <div class="search-container">
-        <input type="text" class="search-input" placeholder="搜索申请ID、职位ID或申请人ID">
-        <button class="btn btn-primary">搜索</button>
-    </div>
+<form action="#" method="get">
+    <label for="applicantNameFilter">申请者名称:</label>
+    <input type="text" id="applicantNameFilter" name="applicantNameFilter" th:value="${applicantNameFilter}"/>
+    <label for="jobNameFilter">岗位名称:</label>
+    <input type="text" id="jobNameFilter" name="jobNameFilter" th:value="${jobNameFilter}"/>
+    <button type="submit">搜索</button>
+</form>
 
-    <div class="table-container">
-        <table>
-            <thead>
-            <tr>
-                <th>申请ID</th>
-                <th>职位ID</th>
-                <th>申请人ID</th>
-                <th>申请日期</th>
-                <th>申请状态</th>
-                <th>操作</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="apply : ${jobapplyList}" th:classappend="${cycleStatus}">
-                <td th:text="${apply.applyId}"></td>
-                <td th:text="${apply.jobId}"></td>
-                <td th:text="${apply.applicantId}"></td>
-                <td th:text="${#dates.format(apply.applyDate, 'yyyy-MM-dd')}"></td>
-                <td>
-                        <span class="status-pill" th:classappend="${apply.applyState == 1 ? 'status-pending' :
-                                                     apply.applyState == 2 ? 'status-interview' :
-                                                     apply.applyState == 3 ? 'status-offer' :
-                                                     'status-rejected'}">
-                            <span th:text="${apply.applyState == 1 ? '待处理' :
-                                          apply.applyState == 2 ? '已面试' :
-                                          apply.applyState == 3 ? '已录用' : '已拒绝'}"></span>
-                        </span>
-                </td>
-                <td>
-                    <a href="#" class="btn btn-primary" style="padding: 4px 8px; font-size: 12px;">查看</a>
-                </td>
-            </tr>
-            <tr th:if="${#lists.isEmpty(jobapplyList)}">
-                <td colspan="6" class="empty-state">暂无职位申请记录</td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
+<table border="1" cellspacing="0" cellpadding="10">
+    <thead>
+    <tr>
+        <th>申请者名称</th>
+        <th>申请者邮箱</th>
+        <th>岗位名称</th>
+        <th>公司名称</th>
+        <th>申请时间</th>
+        <th>申请状态</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${jobapplyList}">
+        <td th:text="${item.applicantName}"></td>
+        <td th:text="${item.applicantEmail}"></td>
+        <td th:text="${item.jobName}"></td>
+        <td th:text="${item.companyName}"></td>
+        <td th:text="${#dates.format(item.applyDate, 'yyyy-MM-dd HH:mm')}"></td>
+        <td th:text="${item.applyState == 1 ? '待审核' : '已处理'}"></td>
+    </tr>
+    </tbody>
+</table>
 
-    <div class="pagination">
-        <button class="page-btn">上一页</button>
-        <button class="page-btn active">1</button>
-        <button class="page-btn">2</button>
-        <button class="page-btn">3</button>
-        <button class="page-btn">下一页</button>
+<div th:if="${page != null}">
+    <div>当前页: <span th:text="${page.current}"></span> / <span th:text="${page.pages}"></span></div>
+    <div>
+        <a th:href="@{/job/application/list(page=${page.current - 1}, size=${page.size}, applicantNameFilter=${applicantNameFilter}, jobNameFilter=${jobNameFilter})}" th:if="${page.current > 1}">上一页</a>
+        <a th:href="@{/job/application/list(page=${page.current + 1}, size=${page.size}, applicantNameFilter=${applicantNameFilter}, jobNameFilter=${jobNameFilter})}" th:if="${page.current < page.pages}">下一页</a>
     </div>
 </div>
+
 </body>
 </html>
