@@ -6,8 +6,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebFilter(filterName = "AuthFilter",
-        urlPatterns = "/*") // 拦截所有请求
+//@WebFilter(filterName = "AuthFilter",
+//        urlPatterns = "/*") // 拦截所有请求
 public class AuthFilter implements Filter {
     // 公开路径列表（不需要登录的路径）
     private static final String[] PUBLIC_PATHS = {

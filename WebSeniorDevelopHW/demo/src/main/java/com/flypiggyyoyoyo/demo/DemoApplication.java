@@ -8,7 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @MapperScan("com.flypiggyyoyoyo.demo.mapper")
-@ServletComponentScan(basePackages = "com.flypiggyyoyoyo.demo.listener")
+@ServletComponentScan
 public class DemoApplication {
 
     public static void main(String[] args) {
