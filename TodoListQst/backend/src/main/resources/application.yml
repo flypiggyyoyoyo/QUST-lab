@@ -1,0 +1,28 @@
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:49152/w?useUnicode=true&characterEncoding=utf8mb4&serverTimezone=Asia/Shanghai
+    username: root
+    password: shr040726cc
+    hikari:
+      # 连接池基本配置
+      maximum-pool-size: 10          # 最大连接数
+      minimum-idle: 5                # 最小空闲连接数
+      initialization-fail-timeout: 10000  # 初始化超时时间(ms)
+      idle-timeout: 30000             # 空闲连接超时时间(ms)
+      max-lifetime: 60000             # 连接最大生命周期(ms)
+      connection-timeout: 30000       # 连接超时时间(ms)
+      validation-timeout: 3000        # 验证超时时间(ms)
+      connection-test-query: SELECT 1 # 连接验证SQL
+      pool-name: HikariCP             # 连接池名称
+# 应用服务 WEB 访问端口
+server:
+  port: 8080
+
+# 下面这些内容是为了让MyBatis映射
+mybatis:
+  # 指定Mybatis的Mapper文件
+  mapper-locations: classpath:mappers/*xml
+  # 指定Mybatis的实体目录
+  type-aliases-package: com.flypiggyyoyoyo.backend.mybatis.entity
