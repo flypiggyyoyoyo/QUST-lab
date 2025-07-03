@@ -2,6 +2,7 @@ package com.flypiggyyoyoyo.backend.service;
 
 import com.flypiggyyoyoyo.backend.data.todo.TodoCreateRequest;
 import com.flypiggyyoyoyo.backend.data.todo.TodoResponse;
+import com.flypiggyyoyoyo.backend.data.todo.TodoStatsResponse;
 import com.flypiggyyoyoyo.backend.data.todo.TodoUpdateRequest;
 import com.flypiggyyoyoyo.backend.model.TodoItems;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -30,4 +31,6 @@ public interface TodoItemsService extends IService<TodoItems> {
     TodoResponse updateTodoStatus(Integer taskId, Integer status);
 
     List<TodoResponse> filterTodos(LocalDate startDate, LocalDate endDate, Integer priority);
+
+    TodoStatsResponse getTodoStats();
 }

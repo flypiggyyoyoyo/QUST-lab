@@ -104,4 +104,13 @@ public class TodoController {
         List<TodoResponse> response = todoService.filterTodos(startDate, endDate, priority);
         return Result.OK(response);
     }
+
+    /**
+     * 获取任务统计数据（总任务数、已完成数、完成占比）
+     */
+    @GetMapping("/stats")
+    public Result<TodoStatsResponse> getTodoStats() {
+        TodoStatsResponse stats = todoService.getTodoStats();
+        return Result.OK(stats);
+    }
 }

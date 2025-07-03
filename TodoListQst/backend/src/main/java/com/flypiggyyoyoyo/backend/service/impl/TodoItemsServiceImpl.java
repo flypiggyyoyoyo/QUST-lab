@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.flypiggyyoyoyo.backend.constants.ErrorEnum;
 import com.flypiggyyoyoyo.backend.data.todo.TodoCreateRequest;
 import com.flypiggyyoyoyo.backend.data.todo.TodoResponse;
+import com.flypiggyyoyoyo.backend.data.todo.TodoStatsResponse;
 import com.flypiggyyoyoyo.backend.data.todo.TodoUpdateRequest;
 import com.flypiggyyoyoyo.backend.exception.TodoException;
 import com.flypiggyyoyoyo.backend.model.TodoItems;
@@ -158,6 +159,32 @@ public class TodoItemsServiceImpl extends ServiceImpl<TodoItemsMapper, TodoItems
         return todos.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public TodoStatsResponse getTodoStats() {
+        TodoStatsResponse stats = new TodoStatsResponse();
+
+        // 1. 计算总任务数
+        int totalTasks = this.count();  // MyBatis-Plus的count()方法，查询总记录数
+        stats.setTotalTasks(totalTasks);
+
+        // 2. 计算已完成任务数（假设status=1表示已完成，根据实际业务调整）
+        QueryWrapper<TodoItems> completedWrapper = new QueryWrapper<>();
+        completedWrapper.eq("status", 1);  // 按状态筛选已完成任务
+        int completedTasks = this.count(completedWrapper);
+        stats.setCompletedTasks(completedTasks);
+
+        // 3. 计算完成占比（避免除以0的情况）
+        double completionRate = 0.0;
+        if (totalTasks > 0) {
+            completionRate = (double) completedTasks / totalTasks * 100;
+            // 保留两位小数（四舍五入）
+            completionRate = Math.round(completionRate * 100) / 100.0;
+        }
+        stats.setCompletionRate(completionRate);
+
+        return stats;
     }
 
     private TodoResponse convertToResponse(TodoItems todo) {
