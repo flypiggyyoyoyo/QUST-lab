@@ -70,4 +70,16 @@ public class TodoController {
 
         return Result.OK(result);
     }
+
+    /**
+     * 更新待办事项状态
+     */
+    @PatchMapping("/{id}/status")
+    public Result<TodoResponse> updateTodoStatus(
+            @PathVariable int id,
+            @RequestBody @Valid StatusUpdateRequest request
+    ) {
+        TodoResponse response = todoService.updateTodoStatus(id, request.getStatus());
+        return Result.OK(response);
+    }
 }

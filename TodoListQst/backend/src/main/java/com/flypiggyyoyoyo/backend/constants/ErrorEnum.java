@@ -12,6 +12,7 @@ public enum ErrorEnum {
     DATABASE_ERROR(50001, "数据库操作失败"),
 
     // Todo相关错误（按404xx和500xx格式）
+    INVALID_STATUS(400, "无效的状态值"),
     TODO_NOT_FOUND(40401, "待办事项不存在", 404),
     TODO_OPERATION_FAILED(50002, "待办事项操作失败"),
     TODO_PERMISSION_DENIED(40302, "无权限操作该待办事项", 403);

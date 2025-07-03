@@ -113,6 +113,26 @@ public class TodoItemsServiceImpl extends ServiceImpl<TodoItemsMapper, TodoItems
         }
     }
 
+    @Override
+    public TodoResponse updateTodoStatus(Integer taskId, Integer status) {
+        TodoItems todo = this.getById(taskId);
+        if (todo == null) {
+            throw new TodoException(ErrorEnum.TODO_NOT_FOUND);
+        }
+
+        if (status != 0 && status != 1) {
+            throw new TodoException(ErrorEnum.INVALID_STATUS);
+        }
+
+        todo.setStatus(status);
+        boolean success = this.updateById(todo);
+        if (!success) {
+            throw new TodoException(ErrorEnum.TODO_OPERATION_FAILED);
+        }
+
+        return convertToResponse(todo);
+    }
+
     private TodoResponse convertToResponse(TodoItems todo) {
         TodoResponse response = new TodoResponse();
         response.setTaskId(todo.getTaskId());

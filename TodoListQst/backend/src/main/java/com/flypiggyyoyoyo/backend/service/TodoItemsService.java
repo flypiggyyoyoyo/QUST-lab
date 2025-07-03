@@ -20,4 +20,5 @@ public interface TodoItemsService extends IService<TodoItems> {
     List<TodoResponse> getTodosByUserId(Integer userId);
     TodoResponse updateTodo(Integer taskId, TodoUpdateRequest request);
     void deleteTodo(Integer taskId);
+    TodoResponse updateTodoStatus(Integer taskId, Integer status);
 }
