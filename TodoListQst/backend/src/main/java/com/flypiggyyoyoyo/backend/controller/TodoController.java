@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -23,48 +24,71 @@ public class TodoController {
     private TodoItemsService todoService;
 
     /**
-     * 创建新的待办事项
+     * 创建新的待办事项（关联当前登录用户）
      */
     @PostMapping
-    public Result<TodoResponse> createTodo(@Valid @RequestBody TodoCreateRequest request) {
-        TodoResponse response = todoService.createTodo(request);
+    public Result<TodoResponse> createTodo(
+            HttpServletRequest request,  // 用于获取当前用户ID
+            @Valid @RequestBody TodoCreateRequest requestBody
+    ) {
+        // 从请求属性中获取当前登录用户ID（由JWT拦截器设置）
+        Integer userId = (Integer) request.getAttribute("userId");
+        // 调用服务层方法，传入用户ID，确保任务关联到该用户
+        TodoResponse response = todoService.createTodo(userId, requestBody);
         return Result.OK(response);
     }
 
     /**
-     * 获取单个待办事项
+     * 获取单个待办事项（仅允许获取当前用户的任务）
      */
     @GetMapping("/{id}")
-    public Result<TodoResponse> getTodo(@PathVariable int id) {
-        TodoResponse response = todoService.getTodo(id);
+    public Result<TodoResponse> getTodo(
+            HttpServletRequest request,
+            @PathVariable int id
+    ) {
+        Integer userId = (Integer) request.getAttribute("userId");
+        // 服务层需验证任务属于当前用户
+        TodoResponse response = todoService.getTodo(userId, id);
         return Result.OK(response);
     }
 
     /**
-     * 获取所有待办事项列表
+     * 获取所有待办事项列表（仅返回当前用户的任务）
      */
     @GetMapping
-    public Result<List<TodoResponse>> getAllTodos() {
-        List<TodoResponse> response = todoService.getAllTodos();
+    public Result<List<TodoResponse>> getAllTodos(HttpServletRequest request) {
+        Integer userId = (Integer) request.getAttribute("userId");
+        // 服务层根据用户ID筛选任务
+        List<TodoResponse> response = todoService.getAllTodos(userId);
         return Result.OK(response);
     }
 
     /**
-     * 更新待办事项
+     * 更新待办事项（仅允许更新当前用户的任务）
      */
     @PutMapping("/{id}")
-    public Result<TodoResponse> updateTodo(@PathVariable int id,
-                                           @Valid @RequestBody TodoUpdateRequest request) {
-        TodoResponse response = todoService.updateTodo(id, request);
+    public Result<TodoResponse> updateTodo(
+            HttpServletRequest request,
+            @PathVariable int id,
+            @Valid @RequestBody TodoUpdateRequest requestBody
+    ) {
+        Integer userId = (Integer) request.getAttribute("userId");
+        // 服务层验证任务属于当前用户后再更新
+        TodoResponse response = todoService.updateTodo(userId, id, requestBody);
         return Result.OK(response);
     }
 
     /**
-     * 删除待办事项
+     * 删除待办事项（仅允许删除当前用户的任务）
      */
     @DeleteMapping("/{id}")
-    public Result<Map<String, Object>> deleteTodo(@PathVariable int id) {
-        todoService.deleteTodo(id);
+    public Result<Map<String, Object>> deleteTodo(
+            HttpServletRequest request,
+            @PathVariable int id
+    ) {
+        Integer userId = (Integer) request.getAttribute("userId");
+        // 服务层验证任务属于当前用户后再删除
+        todoService.deleteTodo(userId, id);
 
         Map<String, Object> result = new HashMap<>();
         result.put("success", true);
@@ -74,43 +98,49 @@ public class TodoController {
     }
 
     /**
-     * 更新待办事项状态
+     * 更新待办事项状态（仅允许更新当前用户的任务）
      */
     @PatchMapping("/{id}/status")
     public Result<TodoResponse> updateTodoStatus(
+            HttpServletRequest request,
             @PathVariable int id,
-            @RequestBody @Valid StatusUpdateRequest request
+            @RequestBody @Valid StatusUpdateRequest requestBody
     ) {
-        TodoResponse response = todoService.updateTodoStatus(id, request.getStatus());
+        Integer userId = (Integer) request.getAttribute("userId");
+        // 服务层验证任务属于当前用户后再更新状态
+        TodoResponse response = todoService.updateTodoStatus(userId, id, requestBody.getStatus());
         return Result.OK(response);
     }
 
     /**
-     * 筛选待办事项
+     * 筛选待办事项（仅筛选当前用户的任务）
      */
     @GetMapping("/filter")
     public Result<List<TodoResponse>> filterTodos(
+            HttpServletRequest request,
             @RequestParam(required = false)
-            @DateTimeFormat(pattern = "yyyy-MM-dd")  // 新增：指定日期格式
+            @DateTimeFormat(pattern = "yyyy-MM-dd")
             LocalDate startDate,
-
             @RequestParam(required = false)
-            @DateTimeFormat(pattern = "yyyy-MM-dd")  // 新增：指定日期格式
+            @DateTimeFormat(pattern = "yyyy-MM-dd")
             LocalDate endDate,
-
             @RequestParam(required = false)
             Integer priority
     ) {
-        List<TodoResponse> response = todoService.filterTodos(startDate, endDate, priority);
+        Integer userId = (Integer) request.getAttribute("userId");
+        // 服务层根据用户ID+筛选条件查询
+        List<TodoResponse> response = todoService.filterTodos(userId, startDate, endDate, priority);
         return Result.OK(response);
     }
 
     /**
-     * 获取任务统计数据（总任务数、已完成数、完成占比）
+     * 获取任务统计数据（仅统计当前用户的任务）
      */
     @GetMapping("/stats")
-    public Result<TodoStatsResponse> getTodoStats() {
-        TodoStatsResponse stats = todoService.getTodoStats();
+    public Result<TodoStatsResponse> getTodoStats(HttpServletRequest request) {
+        Integer userId = (Integer) request.getAttribute("userId");
+        // 服务层统计当前用户的任务数据
+        TodoStatsResponse stats = todoService.getTodoStatsByUserId(userId);
         return Result.OK(stats);
     }
 }

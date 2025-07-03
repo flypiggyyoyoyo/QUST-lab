@@ -16,21 +16,24 @@ import java.util.List;
 * @createDate 2025-07-03 19:53:46
 */
 public interface TodoItemsService extends IService<TodoItems> {
-    TodoResponse createTodo(TodoCreateRequest request);
+    TodoResponse createTodo(Integer userId, TodoCreateRequest request);
 
-    TodoResponse getTodo(Integer taskId);
+    TodoResponse getTodo(Integer userId, Integer taskId);
 
-    List<TodoResponse> getAllTodos();
+    List<TodoResponse> getAllTodos(Integer userId);
 
-    List<TodoResponse> getTodosByUserId(Integer userId);
+    TodoResponse updateTodo(Integer userId, Integer taskId, TodoUpdateRequest request);
 
-    TodoResponse updateTodo(Integer taskId, TodoUpdateRequest request);
+    void deleteTodo(Integer userId, Integer taskId);
 
-    void deleteTodo(Integer taskId);
+    TodoResponse updateTodoStatus(Integer userId, Integer taskId, Integer status);
 
-    TodoResponse updateTodoStatus(Integer taskId, Integer status);
+    List<TodoResponse> filterTodos(
+            Integer userId,
+            LocalDate startDate,
+            LocalDate endDate,
+            Integer priority
+    );
 
-    List<TodoResponse> filterTodos(LocalDate startDate, LocalDate endDate, Integer priority);
-
-    TodoStatsResponse getTodoStats();
+    TodoStatsResponse getTodoStatsByUserId(Integer userId);
 }

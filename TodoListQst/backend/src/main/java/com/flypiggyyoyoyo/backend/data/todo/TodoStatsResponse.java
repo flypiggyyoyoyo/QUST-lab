@@ -1,9 +1,12 @@
-// src/main/java/com/flypiggyyoyoyo/backend/data/todo/TodoStatsResponse.java
 package com.flypiggyyoyoyo.backend.data.todo;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class TodoStatsResponse {
     private int totalTasks;         // 总任务数
     private int completedTasks;     // 已完成任务数

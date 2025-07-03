@@ -26,3 +26,8 @@ mybatis:
   mapper-locations: classpath:mappers/*xml
   # 指定Mybatis的实体目录
   type-aliases-package: com.flypiggyyoyoyo.backend.mybatis.entity
+
+jwt:
+  secret: YTkMdSp5xdStXStbXR/wbGvuJXZ5F8w3WUL2LH1BLR4KNd6H3lCzDsHdEe2G2ajcclHqOeOh9afPInBc4MBxGQ==  # 自定义密钥，至少32字节
+  access-expiration: 1800          # Access Token有效期（秒），默认30分钟
+  refresh-expiration: 86400        # Refresh Token有效期（秒），默认24小时

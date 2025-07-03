@@ -13,13 +13,11 @@ import com.flypiggyyoyoyo.backend.exception.UserException;
 import com.flypiggyyoyoyo.backend.model.Users;
 import com.flypiggyyoyoyo.backend.service.UsersService;
 import com.flypiggyyoyoyo.backend.mapper.UsersMapper;
+import com.flypiggyyoyoyo.backend.utils.JwtUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
-
-import javax.servlet.http.HttpServletRequest;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 /**
 * @author flypiggy
@@ -29,6 +27,9 @@ import java.time.LocalDateTime;
 @Service
 public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
     implements UsersService{
+
+    @Autowired
+    private JwtUtils jwtUtils;
 
     @Override
     public RegisterResponse register(RegisterRequest request) {
@@ -80,8 +81,14 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
             throw new UserException(ErrorEnum.LOGIN_PASSWORD_ERROR);
         }
 
+        String accessToken = jwtUtils.generateAccessToken(user.getUserId(), user.getUsername());
+        String refreshToken = jwtUtils.generateRefreshToken(user.getUserId(), user.getUsername());
+
+        // 返回Token
         LoginResponse response = new LoginResponse();
         BeanUtils.copyProperties(user, response);
+        response.setAccessToken(accessToken);
+        response.setRefreshToken(refreshToken);
 
         return response;
     }
