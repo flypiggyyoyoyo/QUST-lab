@@ -5,9 +5,11 @@ import com.flypiggyyoyoyo.backend.data.todo.*;
 import com.flypiggyyoyoyo.backend.service.TodoItemsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +82,26 @@ public class TodoController {
             @RequestBody @Valid StatusUpdateRequest request
     ) {
         TodoResponse response = todoService.updateTodoStatus(id, request.getStatus());
+        return Result.OK(response);
+    }
+
+    /**
+     * 筛选待办事项
+     */
+    @GetMapping("/filter")
+    public Result<List<TodoResponse>> filterTodos(
+            @RequestParam(required = false)
+            @DateTimeFormat(pattern = "yyyy-MM-dd")  // 新增：指定日期格式
+            LocalDate startDate,
+
+            @RequestParam(required = false)
+            @DateTimeFormat(pattern = "yyyy-MM-dd")  // 新增：指定日期格式
+            LocalDate endDate,
+
+            @RequestParam(required = false)
+            Integer priority
+    ) {
+        List<TodoResponse> response = todoService.filterTodos(startDate, endDate, priority);
         return Result.OK(response);
     }
 }

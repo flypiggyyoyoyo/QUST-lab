@@ -12,6 +12,7 @@ import com.flypiggyyoyoyo.backend.service.TodoItemsService;
 import com.flypiggyyoyoyo.backend.mapper.TodoItemsMapper;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Date;
@@ -131,6 +132,32 @@ public class TodoItemsServiceImpl extends ServiceImpl<TodoItemsMapper, TodoItems
         }
 
         return convertToResponse(todo);
+    }
+
+    @Override
+    public List<TodoResponse> filterTodos(LocalDate startDate, LocalDate endDate, Integer priority) {
+        QueryWrapper<TodoItems> queryWrapper = new QueryWrapper<>();
+
+        if (startDate != null) {
+            LocalDateTime startTime = startDate.atStartOfDay();
+            queryWrapper.ge("creation_date", startTime);
+        }
+
+        if (endDate != null) {
+            LocalDateTime endTime = endDate.atTime(23, 59, 59);
+            queryWrapper.le("creation_date", endTime);
+        }
+
+        if (priority != null) {
+            queryWrapper.eq("priority", priority);
+        }
+
+        queryWrapper.orderByDesc("creation_date");
+
+        List<TodoItems> todos = this.list(queryWrapper);
+        return todos.stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
     }
 
     private TodoResponse convertToResponse(TodoItems todo) {

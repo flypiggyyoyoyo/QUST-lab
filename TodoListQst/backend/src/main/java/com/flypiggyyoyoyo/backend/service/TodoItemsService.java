@@ -6,6 +6,7 @@ import com.flypiggyyoyoyo.backend.data.todo.TodoUpdateRequest;
 import com.flypiggyyoyoyo.backend.model.TodoItems;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -15,10 +16,18 @@ import java.util.List;
 */
 public interface TodoItemsService extends IService<TodoItems> {
     TodoResponse createTodo(TodoCreateRequest request);
+
     TodoResponse getTodo(Integer taskId);
+
     List<TodoResponse> getAllTodos();
+
     List<TodoResponse> getTodosByUserId(Integer userId);
+
     TodoResponse updateTodo(Integer taskId, TodoUpdateRequest request);
+
     void deleteTodo(Integer taskId);
+
     TodoResponse updateTodoStatus(Integer taskId, Integer status);
+
+    List<TodoResponse> filterTodos(LocalDate startDate, LocalDate endDate, Integer priority);
 }
