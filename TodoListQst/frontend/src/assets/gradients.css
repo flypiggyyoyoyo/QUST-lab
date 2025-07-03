@@ -1,0 +1,10 @@
+/* src/assets/gradients.css */
+:root {
+    --gradient-background: radial-gradient(
+            circle at top right,
+            #1a1a2e 0%,
+            #16213e 30%,
+            #0f3460 70%,
+            #1a1a2e 100%
+    );
+}

@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --primary-color: #409eff;
+    --success-color: #67c23a;
+    --warning-color: #e6a23c;
+    --danger-color: #f56c6c;
+    --info-color: #909399;
+
+    --text-primary: #303133;
+    --text-regular: #606266;
+    --text-secondary: #909399;
+    --text-placeholder: #c0c4cc;
+
+    --border-base: #dcdfe6;
+    --border-light: #e4e7ed;
+    --border-lighter: #ebeef5;
+    --border-extra-light: #f2f6fc;
+
+    --bg-color: #f5f7fa;
+    --bg-page: #f2f3f5;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    background-color: var(--bg-page);
+    color: var(--text-regular);
+    line-height: 1.5;
+}
+
+.el-button {
+    transition: all 0.2s ease;
+}
+
+.el-card {
+    border-radius: 10px;
+    border: none;
+}
+
+.el-input__inner {
+    border-radius: 8px;
+    height: 48px;
+}
+
+.el-form-item__label {
+    font-weight: 500;
+    color: var(--text-primary);
+}

@@ -47,7 +47,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
         Users user = new Users()
                 .setUsername(username)
                 .setPassword(encryptedPassword)
-                .setEmail(request.getUserEmail());
+                .setEmail(request.getEmail());
 
         boolean isUserSave = this.save(user);
 
