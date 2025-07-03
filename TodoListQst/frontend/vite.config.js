@@ -14,6 +14,7 @@ export default defineConfig({
     },
   },
   server: {
+    port: 8081,
     proxy: {
       // 配置跨域代理
       '/api': {
