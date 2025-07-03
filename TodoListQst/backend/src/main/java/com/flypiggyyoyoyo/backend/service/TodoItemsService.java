@@ -1,7 +1,12 @@
 package com.flypiggyyoyoyo.backend.service;
 
+import com.flypiggyyoyoyo.backend.data.todo.TodoCreateRequest;
+import com.flypiggyyoyoyo.backend.data.todo.TodoResponse;
+import com.flypiggyyoyoyo.backend.data.todo.TodoUpdateRequest;
 import com.flypiggyyoyoyo.backend.model.TodoItems;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
 * @author flypiggy
@@ -9,5 +14,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
 * @createDate 2025-07-03 19:53:46
 */
 public interface TodoItemsService extends IService<TodoItems> {
-
+    TodoResponse createTodo(TodoCreateRequest request);
+    TodoResponse getTodo(Integer taskId);
+    List<TodoResponse> getAllTodos();
+    List<TodoResponse> getTodosByUserId(Integer userId);
+    TodoResponse updateTodo(Integer taskId, TodoUpdateRequest request);
+    void deleteTodo(Integer taskId);
 }

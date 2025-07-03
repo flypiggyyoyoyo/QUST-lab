@@ -23,6 +23,13 @@ public class GlobleExceptionHandler {
         return Result.userError(err.getCode(),err.getMessage());
     }
 
+    @ExceptionHandler(value = TodoException.class)
+    public Result<?> handlerTodoException(TodoException err) {
+        log.error("待办事项异常 {}", err.getMessage());
+
+        return Result.userError(err.getCode(), err.getMessage());
+    }
+
     //捕获所有异常
     @ExceptionHandler(value = Throwable.class)
     public Result<?> handlerException(Throwable e) {
