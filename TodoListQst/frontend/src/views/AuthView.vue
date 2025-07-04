@@ -7,9 +7,9 @@
         <div class="brand-header">
           <div class="logo">
             <div class="logo-circle"></div>
-            <span>Lovebirds</span>
+            <span>FlyTODO</span>
           </div>
-          <h1>Welcome to Lovebirds</h1>
+          <h1>Welcome to FlyTODO</h1>
         </div>
 
         <!-- 登录表单 -->
@@ -21,7 +21,7 @@
                   type="text"
                   id="username"
                   v-model="loginForm.username"
-                  placeholder="David Brooks"
+                  placeholder="flypiggy"
               >
             </div>
           </div>
@@ -41,8 +41,8 @@
           <div class="divider"></div>
 
           <div class="slogan">
-            <h3>Macenas mattis egestas</h3>
-            <p>Erdum et malesuada fames ac ante ipsum primis in faucibus uspendisse porta.</p>
+            <h3>Time is money</h3>
+            <p>Turn your to-dos into to-dones, one step at a time.</p>
           </div>
 
           <button type="submit" class="signin-button" :disabled="loginLoading">
@@ -77,7 +77,7 @@
                   type="text"
                   id="username"
                   v-model="registerForm.username"
-                  placeholder="David Brooks"
+                  placeholder="flypiggy"
               >
             </div>
           </div>
@@ -89,7 +89,7 @@
                   type="email"
                   id="email"
                   v-model="registerForm.email"
-                  placeholder="david@example.com"
+                  placeholder="fly@example.com"
               >
             </div>
           </div>
@@ -216,7 +216,6 @@ const switchToLogin = () => {
   isLogin.value = true;
 };
 
-// 处理登录
 const handleLogin = async () => {
   loginLoading.value = true;
 
@@ -228,14 +227,16 @@ const handleLogin = async () => {
     });
 
     // 登录成功，存储token和用户信息
-    localStorage.setItem('token', response.data.data.token); // 假设token在data字段中
-    localStorage.setItem('user', JSON.stringify(response.data.data.user)); // 假设用户信息在data字段中
+    // 注意：根据后端LoginResponse类调整字段名
+    localStorage.setItem('token', response.data.accessToken); // 直接使用accessToken字段
+    localStorage.setItem('user', JSON.stringify({
+      id: response.data.userId,           // 映射后端的userId到前端的id
+      username: response.data.username,  // 直接使用username字段
+      email: response.data.userEmail     // 映射后端的userEmail到前端的email
+    }));
 
-    // 新增：登录成功后跳转到仪表盘
-    router.push('/dashboard'); // 使用路由跳转
-
-    // 移除原有的alert提示
-    // alert('登录成功！');
+    // 登录成功后跳转到仪表盘
+    await router.push('/dashboard');
     console.log('登录成功，跳转至仪表盘');
 
   } catch (error) {
@@ -243,11 +244,9 @@ const handleLogin = async () => {
     console.error('登录失败:', error);
 
     if (error.response) {
-      // 服务器返回错误状态码
       errorTitle.value = 'Login Failed';
       errorMessage.value = error.response.data.message || '登录失败，请检查用户名和密码';
     } else {
-      // 网络错误或其他错误
       errorTitle.value = 'Network Error';
       errorMessage.value = '无法连接到服务器，请稍后再试';
     }

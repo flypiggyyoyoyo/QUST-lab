@@ -1,10 +1,10 @@
 <!-- src/App.vue -->
 <template>
-  <AuthView />
+  <router-view />
 </template>
 
 <script setup>
-import AuthView from '@/views/AuthView.vue';
+
 </script>
 
 <style>

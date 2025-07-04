@@ -6,31 +6,31 @@
         <div class="profile-image">
           <img src="https://picsum.photos/200/200?random=1" alt="User profile" />
         </div>
-        <h3>{{ user.fullname || 'User' }}</h3>
-        <p>{{ user.email || 'user@example.com' }}</p>
+        <h3>{{ user.username || 'User' }}</h3>
+        <p>{{ user.userEmail || 'user@example.com' }}</p>
       </div>
 
       <nav class="menu">
         <ul>
-          <li class="active">
+          <li :class="{ active: currentPage === 'todos' }">
             <a href="#" @click.prevent="navigateTo('todos')">
               <i class="fas fa-tasks"></i>
               <span>Todos</span>
             </a>
           </li>
-          <li>
+          <li :class="{ active: currentPage === 'calendar' }">
             <a href="#" @click.prevent="navigateTo('calendar')">
               <i class="fas fa-calendar"></i>
               <span>Calendar</span>
             </a>
           </li>
-          <li>
+          <li :class="{ active: currentPage === 'analytics' }">
             <a href="#" @click.prevent="navigateTo('analytics')">
               <i class="fas fa-chart-pie"></i>
               <span>Analytics</span>
             </a>
           </li>
-          <li>
+          <li :class="{ active: currentPage === 'settings' }">
             <a href="#" @click.prevent="navigateTo('settings')">
               <i class="fas fa-cog"></i>
               <span>Settings</span>
@@ -40,7 +40,7 @@
       </nav>
 
       <div class="logout">
-        <button @click="logout">
+        <button @click="logout" :disabled="loading">
           <i class="fas fa-sign-out-alt"></i>
           <span>Logout</span>
         </button>
@@ -53,11 +53,20 @@
       <header class="header">
         <div class="header-title">
           <h1>My Todo List</h1>
-          <p>Welcome back, {{ user.fullname || 'User' }}</p>
+          <p>Welcome back, {{ user.username || 'User' }} <span class="current-date">{{ formattedDate }}</span></p>
         </div>
 
         <div class="header-actions">
-          <button class="add-todo-btn" @click="openAddTodoModal">
+          <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input
+                type="text"
+                v-model="searchQuery"
+                placeholder="Search tasks..."
+                @input="handleSearch"
+            >
+          </div>
+          <button class="add-todo-btn" @click="openAddTodoModal" :disabled="loading">
             <i class="fas fa-plus"></i>
             <span>Add Todo</span>
           </button>
@@ -110,7 +119,7 @@
       <div class="filter-bar">
         <div class="filter-group">
           <label>Filter by:</label>
-          <select v-model="filterStatus">
+          <select v-model="filterStatus" @change="debouncedApplyFilters">
             <option value="all">All</option>
             <option value="completed">Completed</option>
             <option value="pending">Pending</option>
@@ -119,7 +128,7 @@
 
         <div class="filter-group">
           <label>Priority:</label>
-          <select v-model="filterPriority">
+          <select v-model="filterPriority" @change="debouncedApplyFilters">
             <option value="all">All</option>
             <option value="1">High</option>
             <option value="2">Medium</option>
@@ -129,26 +138,54 @@
 
         <div class="filter-group">
           <label>Date Range:</label>
-          <input type="date" v-model="filterStartDate" placeholder="Start Date">
-          <input type="date" v-model="filterEndDate" placeholder="End Date">
+          <input
+              type="date"
+              v-model="filterStartDate"
+              @change="debouncedApplyFilters"
+              :max="filterEndDate || undefined"
+          >
+          <input
+              type="date"
+              v-model="filterEndDate"
+              @change="debouncedApplyFilters"
+              :min="filterStartDate || undefined"
+          >
         </div>
 
-        <button class="filter-btn" @click="applyFilters">
+        <button class="filter-btn" @click="applyFilters" :disabled="loading">
           <i class="fas fa-filter"></i>
           <span>Apply Filters</span>
+        </button>
+
+        <button
+            class="reset-filter-btn"
+            @click="resetFilters"
+            :disabled="isDefaultFilterState"
+        >
+          <i class="fas fa-sync-alt"></i>
+          <span>Reset</span>
         </button>
       </div>
 
       <!-- 待办事项列表 -->
       <div class="todos-list">
-        <div class="todo-item"
-             v-for="todo in filteredTodos"
-             :key="todo.id"
-             :class="{ 'completed': todo.completed, 'high-priority': todo.priority === 1 }">
+        <div
+            class="todo-item"
+            v-for="todo in filteredTodos"
+            :key="todo.id"
+            :class="{
+            'completed': todo.completed,
+            'high-priority': todo.priority === 1,
+            'overdue': isOverdue(todo) && !todo.completed
+          }"
+        >
           <div class="todo-checkbox">
-            <input type="checkbox"
-                   :checked="todo.completed"
-                   @change="updateTodoStatus(todo.id, !todo.completed)">
+            <input
+                type="checkbox"
+                :checked="todo.completed"
+                @change="updateTodoStatus(todo.id, !todo.completed)"
+                :disabled="loading"
+            >
           </div>
 
           <div class="todo-content">
@@ -158,93 +195,217 @@
               <span class="due-date">
                 <i class="fas fa-calendar"></i>
                 {{ formatDate(todo.dueDate) || 'No due date' }}
+                <span v-if="isOverdue(todo) && !todo.completed" class="overdue-badge">Overdue</span>
               </span>
               <span class="priority"
                     :class="{ 'high': todo.priority === 1, 'medium': todo.priority === 2, 'low': todo.priority === 3 }">
                 <i class="fas fa-flag"></i>
                 {{ getPriorityText(todo.priority) }}
               </span>
+              <span v-if="todo.tags && todo.tags.length" class="tags">
+                <i class="fas fa-tags"></i>
+                <span v-for="tag in todo.tags" :key="tag.id" class="tag">{{ tag.name }}</span>
+              </span>
             </div>
           </div>
 
           <div class="todo-actions">
-            <button class="edit-btn" @click="openEditTodoModal(todo)">
+            <button
+                class="edit-btn"
+                @click="openEditTodoModal(todo)"
+                :disabled="loading"
+                aria-label="Edit task"
+            >
               <i class="fas fa-edit"></i>
             </button>
-            <button class="delete-btn" @click="deleteTodo(todo.id)">
+            <button
+                class="delete-btn"
+                @click="prepareDeleteTodo(todo)"
+                :disabled="loading"
+                aria-label="Delete task"
+            >
               <i class="fas fa-trash"></i>
             </button>
           </div>
         </div>
 
         <!-- 空状态 -->
-        <div v-if="todos.length === 0" class="empty-state">
+        <div v-if="filteredTodos.length === 0 && !loading" class="empty-state">
           <div class="empty-icon">
             <i class="fas fa-clipboard-list"></i>
           </div>
           <h3>No tasks found</h3>
-          <p>Click the "Add Todo" button to create your first task.</p>
-          <button class="empty-btn" @click="openAddTodoModal">
+          <p>
+            {{ searchQuery || hasActiveFilters ?
+              'Try adjusting your search or filters.' :
+              'Click the "Add Todo" button to create your first task.'
+            }}
+          </p>
+          <button class="empty-btn" @click="openAddTodoModal" :disabled="loading">
             <i class="fas fa-plus"></i>
             Add Task
           </button>
+        </div>
+
+        <!-- 加载状态 -->
+        <div v-if="loading && todos.length === 0" class="list-loading">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Loading your tasks...</p>
         </div>
       </div>
     </main>
 
     <!-- 添加/编辑待办事项模态框 -->
-    <div v-if="showTodoModal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>{{ isEditing ? 'Edit Todo' : 'Add New Todo' }}</h3>
-          <button class="close-btn" @click="closeTodoModal">
-            <i class="fas fa-times"></i>
-          </button>
+    <div v-if="showTodoModal" class="modal-backdrop" @click.self="closeTodoModal">
+      <div class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>{{ isEditing ? 'Edit Todo' : 'Add New Todo' }}</h3>
+            <button class="close-btn" @click="closeTodoModal" :disabled="loading">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <form @submit.prevent="submitTodo">
+              <div class="form-group">
+                <label for="title">Title <span class="required">*</span></label>
+                <input
+                    type="text"
+                    id="title"
+                    v-model="todoForm.title"
+                    required
+                    placeholder="Task title"
+                    :disabled="loading"
+                    :class="{ 'invalid': formErrors.title }"
+                >
+                <p v-if="formErrors.title" class="error-message">{{ formErrors.title }}</p>
+              </div>
+
+              <div class="form-group">
+                <label for="description">Description</label>
+                <textarea
+                    id="description"
+                    v-model="todoForm.description"
+                    placeholder="Task description"
+                    :disabled="loading"
+                    rows="3"
+                ></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="dueDate">Due Date</label>
+                <input
+                    type="date"
+                    id="dueDate"
+                    v-model="todoForm.dueDate"
+                    :disabled="loading"
+                    :min="minDueDate"
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="priority">Priority <span class="required">*</span></label>
+                <select
+                    id="priority"
+                    v-model="todoForm.priority"
+                    :disabled="loading"
+                    required
+                >
+                  <option value="1">High</option>
+                  <option value="2">Medium</option>
+                  <option value="3">Low</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="tags">Tags</label>
+                <input
+                    type="text"
+                    id="tags"
+                    v-model="tagInput"
+                    placeholder="Add tags separated by commas"
+                    :disabled="loading"
+                >
+                <div class="tags-preview">
+                  <span
+                      v-for="(tag, index) in todoForm.tags"
+                      :key="index"
+                      class="tag-item"
+                  >
+                    {{ tag }}
+                    <button
+                        type="button"
+                        class="remove-tag"
+                        @click="removeTag(index)"
+                        :disabled="loading"
+                    >
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </span>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button
+                    type="button"
+                    class="cancel-btn"
+                    @click="closeTodoModal"
+                    :disabled="loading"
+                >
+                  Cancel
+                </button>
+                <button
+                    type="submit"
+                    class="save-btn"
+                    :disabled="loading"
+                >
+                  <i v-if="loading" class="fas fa-spinner fa-spin"></i>
+                  <span>{{ isEditing ? 'Update' : 'Create' }}</span>
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
+      </div>
+    </div>
 
-        <div class="modal-body">
-          <form @submit.prevent="submitTodo">
-            <div class="form-group">
-              <label for="title">Title</label>
-              <input type="text"
-                     id="title"
-                     v-model="todoForm.title"
-                     required
-                     placeholder="Task title">
-            </div>
+    <!-- 确认删除模态框 -->
+    <div v-if="showDeleteConfirm" class="modal-backdrop" @click.self="cancelDelete">
+      <div class="modal confirm-modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Confirm Delete</h3>
+            <button class="close-btn" @click="cancelDelete" :disabled="loading">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
 
-            <div class="form-group">
-              <label for="description">Description</label>
-              <textarea id="description"
-                        v-model="todoForm.description"
-                        placeholder="Task description"></textarea>
-            </div>
-
-            <div class="form-group">
-              <label for="dueDate">Due Date</label>
-              <input type="date"
-                     id="dueDate"
-                     v-model="todoForm.dueDate">
-            </div>
-
-            <div class="form-group">
-              <label for="priority">Priority</label>
-              <select id="priority" v-model="todoForm.priority">
-                <option value="1">High</option>
-                <option value="2">Medium</option>
-                <option value="3">Low</option>
-              </select>
-            </div>
+          <div class="modal-body">
+            <p>Are you sure you want to delete this task?</p>
+            <p class="task-title">"{{ taskToDelete?.title }}"</p>
+            <p class="delete-warning">This action cannot be undone.</p>
 
             <div class="form-actions">
-              <button type="button" class="cancel-btn" @click="closeTodoModal">
+              <button
+                  type="button"
+                  class="cancel-btn"
+                  @click="cancelDelete"
+                  :disabled="loading"
+              >
                 Cancel
               </button>
-              <button type="submit" class="save-btn">
-                {{ isEditing ? 'Update' : 'Create' }}
+              <button
+                  type="button"
+                  class="delete-confirm-btn"
+                  @click="confirmDelete"
+                  :disabled="loading"
+              >
+                <i v-if="loading" class="fas fa-spinner fa-spin"></i>
+                <span>Delete</span>
               </button>
             </div>
-          </form>
+          </div>
         </div>
       </div>
     </div>
@@ -256,25 +417,32 @@
       </div>
     </div>
 
-    <!-- 错误提示 -->
-    <div v-if="showError" class="error-notification">
-      <div class="error-content">
-        <i class="fas fa-exclamation-circle"></i>
-        <p>{{ errorMessage }}</p>
-        <button @click="showError = false">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
+    <!-- 通知提示 -->
+    <div
+        v-if="showNotification"
+        class="notification"
+        :class="notificationType"
+    >
+      <i :class="notificationIcon"></i>
+      <p>{{ notificationMessage }}</p>
+      <button @click="showNotification = false">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue';
+import { ref, reactive, onMounted, computed, watch } from 'vue';
 import axios from 'axios';
+import { useRouter } from 'vue-router';
+import { debounce } from 'lodash';
+
+// 初始化路由
+const router = useRouter();
 
 // 配置axios基础URL和拦截器
-axios.defaults.baseURL = 'http://localhost:8080/api/v1'; // 根据实际后端地址修改
+axios.defaults.baseURL = 'http://localhost:8080/api/v1';
 
 // 请求拦截器，添加token
 axios.interceptors.request.use(config => {
@@ -293,7 +461,7 @@ axios.interceptors.response.use(
         // 未授权，跳转到登录页
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        window.location.href = '/'; // 跳转到登录页
+        router.push('/auth');
       }
       return Promise.reject(error);
     }
@@ -301,13 +469,19 @@ axios.interceptors.response.use(
 
 // 状态管理
 const loading = ref(false);
-const showError = ref(false);
-const errorMessage = ref('');
+const showNotification = ref(false);
+const notificationMessage = ref('');
+const notificationType = ref('success');
 const showTodoModal = ref(false);
+const showDeleteConfirm = ref(false);
 const isEditing = ref(false);
 const todos = ref([]);
 const stats = ref({});
-const user = ref(JSON.parse(localStorage.getItem('user')) || {});
+const user = ref({});
+const searchQuery = ref('');
+const currentPage = ref('todos');
+const formErrors = ref({});
+const taskToDelete = ref(null);
 
 // 筛选条件
 const filterStatus = ref('all');
@@ -322,31 +496,102 @@ const todoForm = reactive({
   description: '',
   dueDate: '',
   priority: 2,
-  completed: false
+  completed: false,
+  tags: []
 });
 
-// 计算属性：筛选后的待办事项
+const tagInput = ref('');
+
+// 计算属性
 const filteredTodos = computed(() => {
   return todos.value.filter(todo => {
+    // 状态筛选
     const statusMatch = filterStatus.value === 'all' ||
         (filterStatus.value === 'completed' && todo.completed) ||
         (filterStatus.value === 'pending' && !todo.completed);
 
+    // 优先级筛选
     const priorityMatch = filterPriority.value === 'all' ||
         parseInt(filterPriority.value) === todo.priority;
 
-    const dateMatch = (!filterStartDate.value || new Date(todo.dueDate) >= new Date(filterStartDate.value)) &&
-        (!filterEndDate.value || new Date(todo.dueDate) <= new Date(filterEndDate.value));
+    // 日期范围筛选
+    const dateMatch = (!filterStartDate.value ||
+            new Date(todo.dueDate || '9999-12-31') >= new Date(filterStartDate.value)) &&
+        (!filterEndDate.value ||
+            new Date(todo.dueDate || '0000-01-01') <= new Date(filterEndDate.value));
 
-    return statusMatch && priorityMatch && dateMatch;
+    // 搜索筛选
+    const searchMatch = !searchQuery.value ||
+        todo.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        (todo.description && todo.description.toLowerCase().includes(searchQuery.value.toLowerCase()));
+
+    return statusMatch && priorityMatch && dateMatch && searchMatch;
   });
+});
+
+// 检查是否有活跃的筛选条件
+const hasActiveFilters = computed(() => {
+  return filterStatus.value !== 'all' ||
+      filterPriority.value !== 'all' ||
+      filterStartDate.value ||
+      filterEndDate.value;
+});
+
+// 检查是否是默认筛选状态
+const isDefaultFilterState = computed(() => {
+  return filterStatus.value === 'all' &&
+      filterPriority.value === 'all' &&
+      !filterStartDate.value &&
+      !filterEndDate.value &&
+      !searchQuery.value;
+});
+
+// 格式化当前日期
+const formattedDate = computed(() => {
+  return new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric'
+  });
+});
+
+// 最小截止日期（今天）
+const minDueDate = computed(() => {
+  return new Date().toISOString().split('T')[0];
+});
+
+// 通知图标
+const notificationIcon = computed(() => {
+  return notificationType.value === 'success'
+      ? 'fas fa-check-circle'
+      : 'fas fa-exclamation-circle';
 });
 
 // 生命周期钩子
 onMounted(() => {
-  fetchTodos();
-  fetchTodoStats();
+  initApp();
 });
+
+// 初始化应用
+const initApp = async () => {
+  try {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      user.value = JSON.parse(storedUser);
+    } else {
+      await router.push('/auth');
+      return;
+    }
+
+    // 加载任务数据
+    await Promise.all([
+      fetchTodos(),
+      fetchTodoStats()
+    ]);
+  } catch (error) {
+    handleError(error, 'Failed to initialize application');
+  }
+};
 
 // 获取所有待办事项
 const fetchTodos = async () => {
@@ -371,21 +616,33 @@ const fetchTodoStats = async () => {
   }
 };
 
-// 创建新待办事项
+// 创建新待办事项 - 修复添加功能的核心逻辑
 const createTodo = async () => {
+  // 表单验证
+  if (!validateForm()) return;
+
   loading.value = true;
   try {
     const requestData = {
       title: todoForm.title,
       description: todoForm.description,
       dueDate: todoForm.dueDate,
-      priority: todoForm.priority
+      priority: todoForm.priority,
+      tags: todoForm.tags
     };
 
-    await axios.post('/todos', requestData);
-    closeTodoModal();
-    fetchTodos();
-    fetchTodoStats();
+    // 确保API请求正确执行
+    const response = await axios.post('/todos', requestData);
+
+    // 验证响应并更新UI
+    if (response.data.success) {
+      showNotificationMessage('Task created successfully!', 'success');
+      closeTodoModal();
+      await fetchTodos();
+      await fetchTodoStats();
+    } else {
+      throw new Error(response.data.message || 'Failed to create task');
+    }
   } catch (error) {
     handleError(error, 'Failed to create todo');
   } finally {
@@ -395,16 +652,20 @@ const createTodo = async () => {
 
 // 更新待办事项
 const updateTodo = async () => {
+  if (!validateForm()) return;
+
   loading.value = true;
   try {
     const requestData = {
       title: todoForm.title,
       description: todoForm.description,
       dueDate: todoForm.dueDate,
-      priority: todoForm.priority
+      priority: todoForm.priority,
+      tags: todoForm.tags
     };
 
     await axios.put(`/todos/${todoForm.id}`, requestData);
+    showNotificationMessage('Task updated successfully!', 'success');
     closeTodoModal();
     fetchTodos();
     fetchTodoStats();
@@ -417,58 +678,96 @@ const updateTodo = async () => {
 
 // 更新待办事项状态
 const updateTodoStatus = async (id, status) => {
+  loading.value = true;
   try {
     await axios.patch(`/todos/${id}/status`, { status });
+    showNotificationMessage(`Task ${status ? 'completed' : 'marked as pending'}!`, 'success');
     fetchTodos();
     fetchTodoStats();
   } catch (error) {
     handleError(error, 'Failed to update status');
+    loading.value = false;
   }
 };
 
-// 删除待办事项
-const deleteTodo = async (id) => {
-  if (confirm('Are you sure you want to delete this task?')) {
-    loading.value = true;
-    try {
-      await axios.delete(`/todos/${id}`);
-      fetchTodos();
-      fetchTodoStats();
-    } catch (error) {
-      handleError(error, 'Failed to delete todo');
-    } finally {
-      loading.value = false;
-    }
+// 准备删除待办事项
+const prepareDeleteTodo = (todo) => {
+  taskToDelete.value = todo;
+  showDeleteConfirm.value = true;
+};
+
+// 确认删除待办事项
+const confirmDelete = async () => {
+  if (!taskToDelete.value) return;
+
+  loading.value = true;
+  try {
+    await axios.delete(`/todos/${taskToDelete.value.id}`);
+    showNotificationMessage('Task deleted successfully!', 'success');
+    showDeleteConfirm.value = false;
+    fetchTodos();
+    fetchTodoStats();
+    taskToDelete.value = null;
+  } catch (error) {
+    handleError(error, 'Failed to delete todo');
+    loading.value = false;
   }
 };
 
-// 打开添加待办事项模态框
+// 取消删除
+const cancelDelete = () => {
+  showDeleteConfirm.value = false;
+  taskToDelete.value = null;
+};
+
+// 打开添加待办事项模态框 - 确保模态框正确显示
 const openAddTodoModal = () => {
   isEditing.value = false;
-  todoForm.id = null;
-  todoForm.title = '';
-  todoForm.description = '';
-  todoForm.dueDate = '';
-  todoForm.priority = 2;
-  todoForm.completed = false;
-  showTodoModal.value = true;
+  resetForm();
+  showTodoModal.value = true; // 关键: 确保模态框显示状态被正确设置
+
+  // 调试用: 确认函数被调用
+  console.log('Opening add todo modal');
 };
 
 // 打开编辑待办事项模态框
 const openEditTodoModal = (todo) => {
   isEditing.value = true;
+  resetForm();
+
+  // 填充表单数据
   todoForm.id = todo.id;
   todoForm.title = todo.title;
   todoForm.description = todo.description;
-  todoForm.dueDate = todo.dueDate;
+  todoForm.dueDate = todo.dueDate ? new Date(todo.dueDate).toISOString().split('T')[0] : '';
   todoForm.priority = todo.priority;
   todoForm.completed = todo.completed;
+
+  // 处理标签
+  if (todo.tags) {
+    todoForm.tags = [...todo.tags.map(tag => tag.name)];
+  }
+
   showTodoModal.value = true;
 };
 
 // 关闭待办事项模态框
 const closeTodoModal = () => {
   showTodoModal.value = false;
+  resetForm();
+};
+
+// 重置表单
+const resetForm = () => {
+  todoForm.id = null;
+  todoForm.title = '';
+  todoForm.description = '';
+  todoForm.dueDate = '';
+  todoForm.priority = 2;
+  todoForm.completed = false;
+  todoForm.tags = [];
+  tagInput.value = '';
+  formErrors.value = {};
 };
 
 // 提交待办事项表单
@@ -476,21 +775,92 @@ const submitTodo = () => {
   if (isEditing.value) {
     updateTodo();
   } else {
-    createTodo();
+    createTodo(); // 确保调用正确的创建函数
   }
 };
 
-// 应用筛选条件
-const applyFilters = () => {
-  // 筛选逻辑已在计算属性中实现，这里只需触发更新
-  fetchTodos();
+// 添加标签
+watch(tagInput, (newVal) => {
+  if (newVal && newVal.includes(',')) {
+    const tags = newVal.split(',').map(tag => tag.trim()).filter(Boolean);
+    todoForm.tags = [...new Set([...todoForm.tags, ...tags])];
+    tagInput.value = '';
+  }
+});
+
+// 移除标签
+const removeTag = (index) => {
+  todoForm.tags.splice(index, 1);
 };
 
-// 处理错误
+// 应用筛选条件（防抖处理）
+const debouncedApplyFilters = debounce(() => {
+  // 筛选逻辑已在计算属性中实现
+}, 300);
+
+const applyFilters = () => {
+  debouncedApplyFilters();
+  showNotificationMessage('Filters applied!', 'info');
+};
+
+// 重置筛选条件
+const resetFilters = () => {
+  filterStatus.value = 'all';
+  filterPriority.value = 'all';
+  filterStartDate.value = '';
+  filterEndDate.value = '';
+  searchQuery.value = '';
+  showNotificationMessage('Filters reset!', 'info');
+};
+
+// 处理搜索
+const handleSearch = debounce(() => {
+  // 搜索逻辑在计算属性中实现
+}, 300);
+
+// 表单验证 - 增强验证确保数据正确性
+const validateForm = () => {
+  const errors = {};
+
+  if (!todoForm.title.trim()) {
+    errors.title = 'Title is required';
+  } else if (todoForm.title.length > 100) {
+    errors.title = 'Title cannot exceed 100 characters';
+  }
+
+  if (!todoForm.priority) {
+    errors.priority = 'Priority is required';
+  }
+
+  formErrors.value = errors;
+  return Object.keys(errors).length === 0;
+};
+
+// 错误处理优化
 const handleError = (error, defaultMessage) => {
   console.error(error);
-  errorMessage.value = error.response?.data?.message || defaultMessage;
-  showError.value = true;
+  notificationMessage.value = error.response?.data?.message || defaultMessage;
+  notificationType.value = 'error';
+  showNotification.value = true;
+
+  // 5秒后自动关闭错误提示
+  setTimeout(() => {
+    showNotification.value = false;
+  }, 5000);
+};
+
+// 显示通知消息
+const showNotificationMessage = (message, type = 'success') => {
+  notificationMessage.value = message;
+  notificationType.value = type;
+  showNotification.value = true;
+
+  // 3秒后自动关闭成功提示
+  if (type === 'success' || type === 'info') {
+    setTimeout(() => {
+      showNotification.value = false;
+    }, 3000);
+  }
 };
 
 // 格式化日期
@@ -504,6 +874,15 @@ const formatDate = (dateString) => {
   });
 };
 
+// 检查是否过期
+const isOverdue = (todo) => {
+  if (!todo.dueDate) return false;
+  const dueDate = new Date(todo.dueDate);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return dueDate < today;
+};
+
 // 获取优先级文本
 const getPriorityText = (priority) => {
   const texts = ['', 'High', 'Medium', 'Low'];
@@ -512,42 +891,77 @@ const getPriorityText = (priority) => {
 
 // 导航切换
 const navigateTo = (page) => {
-  // 这里可以实现路由切换逻辑
-  console.log(`Navigate to ${page}`);
+  currentPage.value = page;
 };
 
 // 退出登录
 const logout = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
-  window.location.href = '/'; // 跳转到登录页
+  router.push('/auth');
 };
 </script>
 
 <style scoped>
-/* 整体布局 */
+/* 全局样式设置 - 恢复并优化页面背景 */
+:root {
+  --primary-color: #4F46E5; /* 深紫色作为主色调 */
+  --primary-light: #EEF2FF;
+  --primary-dark: #4338CA;
+  --success-color: #10B981;
+  --success-light: #ECFDF5;
+  --warning-color: #F59E0B;
+  --warning-light: #FFFBEB;
+  --error-color: #EF4444;
+  --error-light: #FEE2E2;
+  --info-color: #3B82F6;
+  --info-light: #EFF6FF;
+  --text-primary: #1F2937;
+  --text-secondary: #6B7280;
+  --text-tertiary: #9CA3AF;
+  --bg-primary: #F3F4F6; /* 恢复页面背景色 */
+  --bg-secondary: #FFFFFF;
+  --border-color: #E5E7EB;
+  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.12);
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --transition: all 0.3s ease;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* 恢复页面背景 */
 .dashboard-container {
   display: flex;
   min-height: 100vh;
-  background-color: #f8f9fa;
+  background-color: var(--bg-primary); /* 主背景色 */
+  color: var(--text-primary);
 }
 
-/* 侧边栏 */
+/* 侧边栏样式 */
 .sidebar {
-  width: 280px;
-  background: linear-gradient(135deg, #4a3e7e 0%, #6a5acd 100%);
-  color: white;
-  padding: 30px 20px;
+  width: 260px;
+  background-color: var(--bg-secondary); /* 侧边栏白色背景 */
+  box-shadow: var(--shadow-sm);
+  padding: 25px 0;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  position: sticky;
-  top: 0;
+  transition: var(--transition);
+  z-index: 10;
 }
 
 .user-profile {
+  padding: 0 25px 25px;
+  border-bottom: 1px solid var(--border-color);
   text-align: center;
-  margin-bottom: 40px;
 }
 
 .profile-image {
@@ -556,7 +970,8 @@ const logout = () => {
   border-radius: 50%;
   overflow: hidden;
   margin: 0 auto 15px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border: 3px solid var(--primary-light);
+  transition: var(--transition);
 }
 
 .profile-image img {
@@ -567,74 +982,88 @@ const logout = () => {
 
 .user-profile h3 {
   font-size: 18px;
-  font-weight: 600;
   margin-bottom: 5px;
+  color: var(--text-primary);
 }
 
 .user-profile p {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-secondary);
+}
+
+.menu {
+  flex: 1;
+  padding: 20px 0;
 }
 
 .menu ul {
   list-style: none;
-  padding: 0;
 }
 
 .menu li {
-  margin-bottom: 15px;
+  margin-bottom: 8px;
 }
 
 .menu a {
   display: flex;
   align-items: center;
-  gap: 15px;
-  color: white;
+  gap: 12px;
+  padding: 12px 25px;
+  color: var(--text-secondary);
   text-decoration: none;
-  padding: 12px 15px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  font-size: 15px;
+  transition: var(--transition);
+  border-left: 3px solid transparent;
 }
 
-.menu a:hover,
+.menu a:hover {
+  background-color: var(--bg-primary);
+  color: var(--primary-color);
+}
+
 .menu li.active a {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  border-left-color: var(--primary-color);
+  font-weight: 500;
 }
 
 .menu i {
-  font-size: 18px;
   width: 20px;
   text-align: center;
 }
 
 .logout {
-  margin-top: auto;
+  padding: 0 25px 20px;
 }
 
 .logout button {
   width: 100%;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  padding: 12px;
-  border-radius: 8px;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 10px;
+  padding: 12px;
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 15px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: var(--transition);
 }
 
 .logout button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--error-light);
+  color: var(--error-color);
+  border-color: var(--error-color);
 }
 
-/* 主内容区 */
+/* 主内容区样式 - 增强背景对比 */
 .main-content {
   flex: 1;
   padding: 30px;
-  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: var(--bg-primary); /* 确保主内容区有背景色 */
 }
 
 .header {
@@ -642,42 +1071,119 @@ const logout = () => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
 .header-title h1 {
   font-size: 28px;
-  font-weight: 700;
-  color: #4a3e7e;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.header-title h1::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 50px;
+  height: 3px;
+  background-color: var(--primary-color);
+  border-radius: 3px;
 }
 
 .header-title p {
-  font-size: 16px;
-  color: #6c757d;
-}
-
-.header-actions .add-todo-btn {
-  background: linear-gradient(135deg, #ff6b9d 0%, #ff8e53 100%);
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  font-size: 15px;
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 4px 15px rgba(255, 142, 83, 0.3);
 }
 
-.header-actions .add-todo-btn:hover {
+.current-date {
+  color: var(--primary-color);
+  font-weight: 500;
+  font-size: 14px;
+  padding: 3px 10px;
+  background-color: var(--primary-light);
+  border-radius: 12px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.search-bar {
+  position: relative;
+  margin-right: 15px;
+  flex: 1;
+  max-width: 300px;
+}
+
+.search-bar input {
+  width: 100%;
+  height: 44px;
+  padding: 0 15px 0 40px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.search-bar input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.search-bar i {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  transition: var(--transition);
+}
+
+.search-bar input:focus + i {
+  color: var(--primary-color);
+}
+
+/* 添加按钮样式优化 - 增强可见性 */
+.add-todo-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+}
+
+.add-todo-btn:hover {
+  background-color: var(--primary-dark);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 142, 83, 0.4);
+  box-shadow: 0 6px 8px -1px rgba(79, 70, 229, 0.3);
 }
 
-/* 统计卡片 */
+.add-todo-btn:active {
+  transform: translateY(0);
+}
+
+/* 统计卡片样式 */
 .stats-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -686,141 +1192,196 @@ const logout = () => {
 }
 
 .card {
-  background-color: white;
-  border-radius: 16px;
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
   padding: 20px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
   position: relative;
   overflow: hidden;
 }
 
 .card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .card::before {
   content: '';
   position: absolute;
   top: 0;
-  right: 0;
-  width: 50px;
-  height: 50px;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 0 0 0 50%;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background-color: var(--primary-color);
+}
+
+.card-completed::before {
+  background-color: var(--success-color);
+}
+
+.card-pending::before {
+  background-color: var(--warning-color);
+}
+
+.card-important::before {
+  background-color: var(--error-color);
 }
 
 .card-icon {
-  font-size: 36px;
-  color: #4a3e7e;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 15px;
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+}
+
+.card-completed .card-icon {
+  background-color: var(--success-light);
+  color: var(--success-color);
+}
+
+.card-pending .card-icon {
+  background-color: var(--warning-light);
+  color: var(--warning-color);
+}
+
+.card-important .card-icon {
+  background-color: var(--error-light);
+  color: var(--error-color);
+}
+
+.card-icon i {
+  font-size: 20px;
 }
 
 .card-content h3 {
-  font-size: 24px;
-  font-weight: 700;
-  color: #4a3e7e;
+  font-size: 28px;
   margin-bottom: 5px;
+  color: var(--text-primary);
 }
 
 .card-content p {
   font-size: 14px;
-  color: #6c757d;
+  color: var(--text-secondary);
 }
 
 .card-progress {
+  height: 6px;
+  background-color: var(--border-color);
+  border-radius: 3px;
   margin-top: 15px;
-  height: 8px;
-  background-color: #f1f1f1;
-  border-radius: 4px;
   overflow: hidden;
 }
 
 .progress-bar {
   height: 100%;
-  transition: width 0.5s ease;
+  background-color: var(--primary-color);
+  transition: width 1s ease;
 }
 
 .card-completed .progress-bar {
-  background: linear-gradient(90deg, #2ecc71 0%, #27ae60 100%);
+  background-color: var(--success-color);
 }
 
 .card-pending .progress-bar {
-  background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%);
+  background-color: var(--warning-color);
 }
 
 .card-important .progress-bar {
-  background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
+  background-color: var(--error-color);
 }
 
-/* 筛选工具栏 */
+/* 筛选栏样式 */
 .filter-bar {
-  background-color: white;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-  margin-bottom: 30px;
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
-  align-items: flex-end;
+  align-items: center;
+  gap: 15px;
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: 15px 20px;
+  margin-bottom: 30px;
+  box-shadow: var(--shadow-sm);
 }
 
 .filter-group {
-  flex: 1;
-  min-width: 200px;
-}
-
-.filter-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 14px;
-  color: #4a3e7e;
-  font-weight: 500;
-}
-
-.filter-group select,
-.filter-group input {
-  width: 100%;
-  height: 40px;
-  padding: 0 15px;
-  background: white;
-  border: 1px solid #e0e0e5;
-  border-radius: 8px;
-  color: #4a3e7e;
-  font-size: 14px;
-  outline: none;
-  transition: all 0.3s ease;
-}
-
-.filter-group select:focus,
-.filter-group input:focus {
-  border-color: #a777e3;
-  box-shadow: 0 0 0 3px rgba(167, 119, 227, 0.15);
-}
-
-.filter-btn {
-  background: linear-gradient(135deg, #4a3e7e 0%, #6a5acd 100%);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.filter-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(74, 62, 126, 0.3);
+.filter-group label {
+  font-size: 14px;
+  color: var(--text-secondary);
+  white-space: nowrap;
 }
 
-/* 待办事项列表 */
+.filter-group select,
+.filter-group input {
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  color: var(--text-primary);
+  transition: var(--transition);
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.filter-group input[type="date"] {
+  width: 140px;
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.filter-btn:hover {
+  background-color: var(--primary-dark);
+}
+
+.reset-filter-btn {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reset-filter-btn:hover {
+  background-color: var(--bg-primary);
+  color: var(--primary-color);
+  border-color: var(--primary-light);
+}
+
+/* 待办事项列表样式 */
 .todos-list {
   display: flex;
   flex-direction: column;
@@ -828,46 +1389,54 @@ const logout = () => {
 }
 
 .todo-item {
-  background-color: white;
-  border-radius: 12px;
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
   padding: 15px 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   display: flex;
   align-items: center;
-  gap: 20px;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
+  gap: 15px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  border-left: 4px solid transparent;
 }
 
 .todo-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .todo-item.completed {
-  opacity: 0.7;
+  background-color: var(--success-light);
+  border-left-color: var(--success-color);
+}
+
+.todo-item.completed .todo-content h3 {
   text-decoration: line-through;
+  color: var(--text-secondary);
 }
 
-.todo-item.high-priority::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background-color: #e74c3c;
+.todo-item.high-priority {
+  border-left-color: var(--error-color);
 }
 
-.todo-checkbox {
-  min-width: 20px;
+.todo-item.overdue {
+  border-left-color: var(--error-color);
+  background-color: var(--error-light);
 }
 
 .todo-checkbox input {
   width: 20px;
   height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
   cursor: pointer;
+  transition: var(--transition);
+}
+
+.todo-checkbox input:checked {
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+  accent-color: var(--success-color);
 }
 
 .todo-content {
@@ -875,41 +1444,77 @@ const logout = () => {
 }
 
 .todo-content h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #4a3e7e;
+  font-size: 16px;
   margin-bottom: 5px;
+  color: var(--text-primary);
+  transition: var(--transition);
 }
 
 .todo-content p {
   font-size: 14px;
-  color: #6c757d;
+  color: var(--text-secondary);
   margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .todo-meta {
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
   font-size: 13px;
-  color: #888;
 }
 
-.todo-meta span {
+.due-date {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-secondary);
+}
+
+.overdue-badge {
+  background-color: var(--error-color);
+  color: white;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+}
+
+.priority {
   display: flex;
   align-items: center;
   gap: 5px;
 }
 
-.todo-meta .priority.high {
-  color: #e74c3c;
+.priority.high {
+  color: var(--error-color);
 }
 
-.todo-meta .priority.medium {
-  color: #f39c12;
+.priority.medium {
+  color: var(--warning-color);
 }
 
-.todo-meta .priority.low {
-  color: #2ecc71;
+.priority.low {
+  color: var(--success-color);
+}
+
+.tags {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .todo-actions {
@@ -917,83 +1522,116 @@ const logout = () => {
   gap: 10px;
 }
 
-.todo-actions button {
+.edit-btn, .delete-btn {
   background: transparent;
   border: none;
-  color: #888;
-  cursor: pointer;
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  cursor: pointer;
+  transition: var(--transition);
 }
 
-.todo-actions button:hover {
-  background-color: #f1f1f1;
+.edit-btn {
+  color: var(--primary-color);
 }
 
-.todo-actions .edit-btn:hover {
-  color: #4a3e7e;
+.edit-btn:hover {
+  background-color: var(--primary-light);
 }
 
-.todo-actions .delete-btn:hover {
-  color: #e74c3c;
+.delete-btn {
+  color: var(--text-secondary);
 }
 
-/* 空状态 */
+.delete-btn:hover {
+  color: var(--error-color);
+  background-color: var(--error-light);
+}
+
+/* 空状态样式 */
 .empty-state {
   text-align: center;
-  padding: 40px 20px;
-  background-color: white;
-  border-radius: 16px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  padding: 50px 20px;
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px dashed var(--border-color);
 }
 
 .empty-icon {
-  font-size: 64px;
-  color: #a777e3;
-  margin-bottom: 20px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.empty-icon i {
+  font-size: 40px;
 }
 
 .empty-state h3 {
-  font-size: 24px;
-  font-weight: 600;
-  color: #4a3e7e;
+  font-size: 20px;
   margin-bottom: 10px;
+  color: var(--text-primary);
 }
 
 .empty-state p {
-  font-size: 16px;
-  color: #6c757d;
-  margin-bottom: 20px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  max-width: 400px;
+  margin: 0 auto 25px;
 }
 
 .empty-btn {
-  background: linear-gradient(135deg, #ff6b9d 0%, #ff8e53 100%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: var(--primary-color);
   color: white;
   border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
+  border-radius: var(--radius-md);
+  font-size: 14px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  box-shadow: 0 4px 15px rgba(255, 142, 83, 0.3);
+  transition: var(--transition);
 }
 
 .empty-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 142, 83, 0.4);
+  background-color: var(--primary-dark);
 }
 
-/* 模态框 */
-.modal {
+/* 列表加载状态 */
+.list-loading {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.list-loading i {
+  font-size: 32px;
+  margin-bottom: 15px;
+  color: var(--primary-color);
+  animation: spin 1s linear infinite;
+}
+
+.list-loading p {
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+/* 模态框样式 - 确保正确显示 */
+.modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
@@ -1003,57 +1641,66 @@ const logout = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
-  animation: fadeIn 0.3s ease;
+  z-index: 1000;
+  opacity: 1;
+  visibility: visible;
+  transition: var(--transition);
+}
+
+.modal {
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 550px;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: translateY(0);
+  transition: var(--transition);
 }
 
 .modal-content {
-  background: white;
-  border-radius: 16px;
-  width: 100%;
-  max-width: 500px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-  animation: slideUp 0.3s ease;
+  padding: 0;
 }
 
 .modal-header {
-  padding: 20px 30px;
-  border-bottom: 1px solid #e0e0e5;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 20px 25px;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .modal-header h3 {
   font-size: 20px;
-  font-weight: 600;
-  color: #4a3e7e;
+  color: var(--text-primary);
 }
 
-.modal-header .close-btn {
+.close-btn {
   background: transparent;
   border: none;
-  color: #888;
+  color: var(--text-tertiary);
+  font-size: 20px;
   cursor: pointer;
-  font-size: 18px;
+  transition: var(--transition);
   width: 30px;
   height: 30px;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  border-radius: 50%;
 }
 
-.modal-header .close-btn:hover {
-  background-color: #f1f1f1;
-  color: #4a3e7e;
+.close-btn:hover {
+  color: var(--error-color);
+  background-color: var(--error-light);
 }
 
 .modal-body {
-  padding: 30px;
+  padding: 25px;
 }
 
+/* 表单样式 */
 .form-group {
   margin-bottom: 20px;
 }
@@ -1062,157 +1709,366 @@ const logout = () => {
   display: block;
   margin-bottom: 8px;
   font-size: 14px;
-  color: #4a3e7e;
-  font-weight: 500;
+  color: var(--text-primary);
 }
 
 .form-group input,
 .form-group textarea,
 .form-group select {
   width: 100%;
-  padding: 12px 15px;
-  background: white;
-  border: 1px solid #e0e0e5;
-  border-radius: 8px;
-  color: #4a3e7e;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
   font-size: 14px;
-  outline: none;
-  transition: all 0.3s ease;
+  color: var(--text-primary);
+  transition: var(--transition);
 }
 
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
-  border-color: #a777e3;
-  box-shadow: 0 0 0 3px rgba(167, 119, 227, 0.15);
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
 .form-group textarea {
-  min-height: 100px;
   resize: vertical;
+}
+
+.form-group input.invalid {
+  border-color: var(--error-color);
 }
 
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 15px;
+  gap: 10px;
+  margin-top: 30px;
 }
 
 .cancel-btn {
-  background: #f1f1f1;
-  color: #4a3e7e;
-  border: none;
   padding: 10px 20px;
-  border-radius: 8px;
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
   font-size: 14px;
-  font-weight: 600;
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: var(--transition);
 }
 
 .cancel-btn:hover {
-  background: #e0e0e0;
+  background-color: var(--bg-primary);
 }
 
 .save-btn {
-  background: linear-gradient(135deg, #4a3e7e 0%, #6a5acd 100%);
+  padding: 10px 20px;
+  background-color: var(--primary-color);
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 14px;
-  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .save-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(74, 62, 126, 0.3);
+  background-color: var(--primary-dark);
 }
 
-/* 加载中状态 */
+/* 标签样式 */
+.tags-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.tag-item {
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.remove-tag {
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-size: 12px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  padding: 0;
+}
+
+.remove-tag:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  color: var(--primary-color);
+}
+
+/* 确认删除模态框 */
+.confirm-modal .modal-content {
+  max-width: 400px;
+}
+
+.task-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 10px 0;
+  padding: 10px;
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-md);
+}
+
+.delete-warning {
+  color: var(--error-color);
+  font-size: 14px;
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.delete-confirm-btn {
+  background-color: var(--error-color);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.delete-confirm-btn:hover {
+  background-color: #d32f2f;
+}
+
+/* 通知样式 */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 20px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  z-index: 1000;
+  animation: slideIn 0.3s ease-out forwards;
+  background-color: white;
+  max-width: 350px;
+  border-left: 4px solid transparent;
+}
+
+.notification.success {
+  border-left-color: var(--success-color);
+}
+
+.notification.error {
+  border-left-color: var(--error-color);
+}
+
+.notification.info {
+  border-left-color: var(--info-color);
+}
+
+.notification i {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.notification.success i {
+  color: var(--success-color);
+}
+
+.notification.error i {
+  color: var(--error-color);
+}
+
+.notification.info i {
+  color: var(--info-color);
+}
+
+.notification p {
+  margin: 0;
+  font-size: 14px;
+  flex: 1;
+  line-height: 1.4;
+}
+
+.notification button {
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-size: 16px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.notification button:hover {
+  background-color: var(--bg-primary);
+  color: var(--text-secondary);
+}
+
+/* 加载遮罩 */
 .loading-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.7);
+  background-color: rgba(255, 255, 255, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 2000;
 }
 
 .loading-spinner {
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4a3e7e 0%, #6a5acd 100%);
+  border: 5px solid var(--primary-light);
+  border-top-color: var(--primary-color);
+  animation: spin 1s linear infinite;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+}
+
+.loading-spinner i {
+  color: var(--primary-color);
   font-size: 24px;
-  animation: spin 1s linear infinite;
-  box-shadow: 0 0 20px rgba(74, 62, 126, 0.3);
 }
 
-/* 错误提示 */
-.error-notification {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background-color: #e74c3c;
-  color: white;
-  padding: 15px 20px;
-  border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(231, 76, 60, 0.2);
+/* 工具类样式 */
+.required {
+  color: var(--error-color);
+}
+
+.error-message {
+  color: var(--error-color);
+  font-size: 12px;
+  margin: 5px 0 0 0;
   display: flex;
   align-items: center;
-  gap: 15px;
-  z-index: 100;
-  animation: fadeIn 0.3s ease;
-}
-
-.error-content {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  flex: 1;
-}
-
-.error-content i {
-  font-size: 20px;
-}
-
-.error-content p {
-  margin: 0;
-  font-size: 14px;
-}
-
-.error-notification button {
-  background: transparent;
-  border: none;
-  color: white;
-  cursor: pointer;
-  font-size: 16px;
+  gap: 5px;
 }
 
 /* 动画 */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 响应式优化 */
+@media (max-width: 1024px) {
+  .stats-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stats-cards .card:last-child {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    padding: 15px 20px;
+  }
+
+  .menu ul {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 10px;
+  }
+
+  .menu li {
+    margin-bottom: 0;
+    margin-right: 10px;
+    flex-shrink: 0;
+  }
+
+  .user-profile {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .profile-image {
+    width: 50px;
+    height: 50px;
+    margin: 0;
+  }
+
+  .stats-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-cards .card:last-child {
+    grid-column: span 1;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .search-bar {
+    max-width: none;
+  }
+
+  .modal {
+    width: 95%;
+  }
 }
 </style>
